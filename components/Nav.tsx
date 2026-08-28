@@ -20,6 +20,13 @@ const LINKS = [
     ),
   },
   {
+    href: '/vibes',
+    label: 'Vibes',
+    icon: (
+      <path d="M10 16.5 16 12l-6-4.5v9ZM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+    ),
+  },
+  {
     href: '/contacts',
     label: 'Users',
     icon: (
@@ -39,11 +46,7 @@ function Icon({ children }: { children: React.ReactNode }) {
 /** The Lasan Mart shopping-cart mark */
 function Logo({ size = 16 }: { size?: number }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="white"
-      style={{ width: size, height: size }}
-    >
+    <svg viewBox="0 0 24 24" fill="white" style={{ width: size, height: size }}>
       <path d="M17 18a2 2 0 1 1 0 4 2 2 0 0 1 0-4ZM7 18a2 2 0 1 1 0 4 2 2 0 0 1 0-4ZM7.2 14.6 7 15a1 1 0 0 0 1 1h12v-2H8.4l1.1-2H17a2 2 0 0 0 1.8-1L22 5H6.2l-.9-2H2v2h2l3.6 7.6-1.4 2Z" />
     </svg>
   );
