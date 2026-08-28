@@ -1,6 +1,17 @@
 import { cookies } from 'next/headers';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+/**
+ * Where the backend lives.
+ *
+ * API_URL has no NEXT_PUBLIC_ prefix, which means it's read at runtime
+ * rather than baked in when the site is built — so changing it in Vercel
+ * takes effect on the next request, with no redeploy. This file only ever
+ * runs on the server, so the browser never needs to see it.
+ */
+const API_URL =
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  'http://localhost:3000';
 
 /**
  * Calls the Lasan Mart backend with the admin key attached.
@@ -10,16 +21,23 @@ export async function adminFetch(path: string, options: RequestInit = {}) {
   const cookieStore = await cookies();
   const key = cookieStore.get('lsm_admin')?.value || '';
 
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-admin-key': key,
-      ...(options.headers || {}),
-    },
-    // Always fetch fresh — a dashboard showing stale leads is useless
-    cache: 'no-store',
-  });
+  let res: Response;
+
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-key': key,
+        ...(options.headers || {}),
+      },
+      // Always fetch fresh — a dashboard showing stale leads is useless
+      cache: 'no-store',
+    });
+  } catch (err: any) {
+    // Naming the URL makes a misconfigured environment obvious
+    throw new Error(`Could not reach the API at ${API_URL} — ${err?.message}`);
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
