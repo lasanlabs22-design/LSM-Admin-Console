@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { adminFetch, AdminContact } from '@/lib/api';
 import { timeAgo } from '@/lib/meta';
+import DeleteContact from './DeleteContact';
 
 export default async function ContactsPage({
   searchParams,
@@ -37,7 +38,10 @@ export default async function ContactsPage({
       </header>
 
       {error && (
-        <div className="card p-4" style={{ borderColor: 'rgba(217,48,37,0.3)' }}>
+        <div
+          className="card p-4"
+          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+        >
           <p className="text-[13px]" style={{ color: '#EF4444' }}>
             {error}
           </p>
@@ -104,15 +108,20 @@ export default async function ContactsPage({
               style={{ borderColor: 'var(--line)', color: 'var(--text-faint)' }}
             >
               <span>Joined {timeAgo(c.created_at)}</span>
-              {c.last_request_at && (
-                <Link
-                  href={`/requests?q=${c.phone}`}
-                  className="font-semibold"
-                  style={{ color: 'var(--brand)' }}
-                >
-                  View requests →
-                </Link>
-              )}
+
+              <div className="flex items-center gap-4">
+                <DeleteContact contactId={c.id} name={c.name} phone={c.phone} />
+
+                {c.last_request_at && (
+                  <Link
+                    href={`/requests?q=${c.phone}`}
+                    className="font-semibold"
+                    style={{ color: 'var(--brand)' }}
+                  >
+                    View requests →
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         ))}
