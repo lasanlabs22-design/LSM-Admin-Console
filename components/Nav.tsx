@@ -27,6 +27,13 @@ const LINKS = [
     ),
   },
   {
+    href: '/influencers',
+    label: 'Creators',
+    icon: (
+      <path d="M12 2 14.4 8.2 21 8.6l-5 4.3 1.6 6.4L12 15.8 6.4 19.3 8 12.9l-5-4.3 6.6-.4L12 2Z" />
+    ),
+  },
+  {
     href: '/contacts',
     label: 'Users',
     icon: (
