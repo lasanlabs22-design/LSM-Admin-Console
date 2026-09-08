@@ -1,7 +1,7 @@
 import { adminFetch } from '@/lib/api';
-import { timeAgo } from '@/lib/meta';
 import InfluencerCard from './InfluencerCard';
 import StatusFilter from './StatusFilter';
+import HubRequest, { HubRequestItem } from './HubRequest';
 
 export type AdminInfluencer = {
   id: string;
@@ -43,11 +43,15 @@ export default async function InfluencersPage({
   if (params.q) query.set('q', params.q);
 
   let influencers: AdminInfluencer[] = [];
+  let requests: HubRequestItem[] = [];
   let stats: {
     total: number;
     pending: number;
     approved: number;
     rejected: number;
+    influencers: number;
+    vendors: number;
+    freelancers: number;
   } | null = null;
   let error: string | null = null;
 
@@ -57,6 +61,15 @@ export default async function InfluencersPage({
     stats = data.stats;
   } catch (err: any) {
     error = err.message;
+  }
+
+  /* Messages are a separate concern — a failure here shouldn't
+     take out the whole page */
+  try {
+    const reqData = await adminFetch('/admin/influencer-requests?status=new');
+    requests = reqData.requests || [];
+  } catch {
+    // Leave the section empty
   }
 
   return (
@@ -84,8 +97,25 @@ export default async function InfluencersPage({
             urgent={stats.pending > 0}
           />
           <Stat label="Approved" value={stats.approved} accent="#12B3A0" />
-          <Stat label="Rejected" value={stats.rejected} accent="#8A8F98" />
-          <Stat label="Total" value={stats.total} accent="var(--brand)" />
+          <Stat label="Creators" value={stats.influencers} accent="#C13584" />
+          <Stat label="Vendors" value={stats.vendors} accent="#0EA97A" />
+        </div>
+      )}
+
+      {/* Unanswered messages first — someone already approved and
+          waiting on us is more urgent than a new application */}
+      {requests.length > 0 && (
+        <div className="rise" style={{ animationDelay: '0.08s' }}>
+          <h2 className="t-label mb-3">
+            {requests.length} unanswered message
+            {requests.length === 1 ? '' : 's'}
+          </h2>
+
+          <div className="space-y-2.5">
+            {requests.map((r) => (
+              <HubRequest key={r.id} request={r} />
+            ))}
+          </div>
         </div>
       )}
 
@@ -106,9 +136,9 @@ export default async function InfluencersPage({
 
       {!error && influencers.length === 0 && (
         <div className="card p-12 text-center">
-          <p className="t-body">No creator applications yet</p>
+          <p className="t-body">No partners yet</p>
           <p className="t-meta mt-1.5">
-            They&apos;ll appear here once creators start signing up
+            They&apos;ll appear here once people start signing up on Lasan Hub
           </p>
         </div>
       )}
