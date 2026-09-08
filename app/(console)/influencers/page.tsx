@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { adminFetch } from '@/lib/api';
 import InfluencerCard from './InfluencerCard';
 import StatusFilter from './StatusFilter';
@@ -37,6 +38,9 @@ export default async function InfluencersPage({
 }) {
   const params = await searchParams;
 
+  /* Two views of the message queue: what needs answering, and what's done */
+  const showDone = params.messages === 'done';
+
   const query = new URLSearchParams();
   if (params.status) query.set('status', params.status);
   if (params.role) query.set('role', params.role);
@@ -66,7 +70,9 @@ export default async function InfluencersPage({
   /* Messages are a separate concern — a failure here shouldn't
      take out the whole page */
   try {
-    const reqData = await adminFetch('/admin/influencer-requests?status=new');
+    const reqData = await adminFetch(
+      `/admin/influencer-requests?status=${showDone ? 'closed' : 'new'}`
+    );
     requests = reqData.requests || [];
   } catch {
     // Leave the section empty
@@ -87,7 +93,7 @@ export default async function InfluencersPage({
 
       {stats && (
         <div
-          className="grid grid-cols-2 lg:grid-cols-4 gap-3 rise"
+          className="grid grid-cols-2 lg:grid-cols-5 gap-3 rise"
           style={{ animationDelay: '0.05s' }}
         >
           <Stat
@@ -99,27 +105,53 @@ export default async function InfluencersPage({
           <Stat label="Approved" value={stats.approved} accent="#12B3A0" />
           <Stat label="Creators" value={stats.influencers} accent="#C13584" />
           <Stat label="Vendors" value={stats.vendors} accent="#0EA97A" />
+          <Stat
+            label="Freelancers"
+            value={stats.freelancers}
+            accent="#3A86FF"
+          />
         </div>
       )}
 
-      {/* Unanswered messages first — someone already approved and
-          waiting on us is more urgent than a new application */}
-      {requests.length > 0 && (
-        <div className="rise" style={{ animationDelay: '0.08s' }}>
-          <h2 className="t-label mb-3">
-            {requests.length} unanswered message
-            {requests.length === 1 ? '' : 's'}
+      {/* Messages first — someone already approved and waiting on us
+          is more urgent than a new application */}
+      <div className="rise" style={{ animationDelay: '0.08s' }}>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="t-label">
+            {showDone
+              ? 'Resolved messages'
+              : requests.length > 0
+                ? `${requests.length} unanswered message${
+                    requests.length === 1 ? '' : 's'
+                  }`
+                : 'Messages'}
           </h2>
 
+          <Link
+            href={showDone ? '/influencers' : '/influencers?messages=done'}
+            className="text-[12.5px] font-semibold"
+            style={{ color: 'var(--brand)' }}
+          >
+            {showDone ? '← Back to open' : 'View resolved'}
+          </Link>
+        </div>
+
+        {requests.length > 0 ? (
           <div className="space-y-2.5">
             {requests.map((r) => (
-              <HubRequest key={r.id} request={r} />
+              <HubRequest key={r.id} request={r} done={showDone} />
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="card p-6 text-center">
+            <p className="t-meta">
+              {showDone ? 'Nothing resolved yet' : 'Nothing waiting'}
+            </p>
+          </div>
+        )}
+      </div>
 
-      <div className="rise" style={{ animationDelay: '0.1s' }}>
+      <div className="rise" style={{ animationDelay: '0.12s' }}>
         <StatusFilter current={params} />
       </div>
 

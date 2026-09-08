@@ -43,8 +43,10 @@ export type HubRequestItem = {
 
 export default function HubRequest({
   request: r,
+  done,
 }: {
   request: HubRequestItem;
+  done?: boolean;
 }) {
   const router = useRouter();
 
@@ -79,7 +81,10 @@ export default function HubRequest({
   };
 
   return (
-    <div className="card p-4" style={{ borderColor: 'rgba(232,174,0,0.3)' }}>
+    <div
+      className="card p-4"
+      style={{ borderColor: done ? 'var(--line)' : 'rgba(232,174,0,0.3)' }}
+    >
       <div className="flex items-start gap-3">
         {r.photo_url ? (
           /* eslint-disable-next-line @next/next/no-img-element */
@@ -144,25 +149,35 @@ export default function HubRequest({
         </p>
       )}
 
-      <div className="flex gap-2 mt-3.5">
-        <button
-          onClick={() => patch('contacted')}
-          disabled={busy}
-          className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold border transition disabled:opacity-40"
-          style={{ borderColor: 'var(--line)', color: 'var(--text-muted)' }}
-        >
-          {busy ? '…' : 'Mark contacted'}
-        </button>
+      {!done ? (
+        <div className="flex gap-2 mt-3.5">
+          <a
+            href={`tel:+91${r.phone}`}
+            className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold border transition text-center"
+            style={{ borderColor: 'var(--line)', color: 'var(--text-muted)' }}
+          >
+            Call them
+          </a>
 
+          <button
+            onClick={() => patch('closed')}
+            disabled={busy}
+            className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold text-white transition disabled:opacity-40"
+            style={{ background: '#12B3A0' }}
+          >
+            {busy ? '…' : 'Mark resolved'}
+          </button>
+        </div>
+      ) : (
         <button
-          onClick={() => patch('closed')}
+          onClick={() => patch('new')}
           disabled={busy}
-          className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold text-white transition disabled:opacity-40"
-          style={{ background: '#12B3A0' }}
+          className="w-full py-2 rounded-lg text-[12.5px] font-semibold border transition mt-3.5 disabled:opacity-40"
+          style={{ borderColor: 'var(--line)', color: 'var(--text-faint)' }}
         >
-          Resolve
+          {busy ? '…' : 'Reopen'}
         </button>
-      </div>
+      )}
     </div>
   );
 }
