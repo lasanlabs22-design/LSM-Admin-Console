@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import type { AdminInfluencer } from './page';
+import PartnerDetail from './PartnerDetail';
 
 const STATUS_META: Record<
   string,
@@ -55,6 +56,7 @@ export default function InfluencerCard({
   const [rejecting, setRejecting] = useState(false);
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const [showDetail, setShowDetail] = useState(false);
 
   const status = STATUS_META[p.status] || STATUS_META.pending;
   const role = ROLE_META[p.role] || ROLE_META.influencer;
@@ -102,7 +104,10 @@ export default function InfluencerCard({
           borderColor: isPending ? 'rgba(232,174,0,0.35)' : 'var(--line)',
         }}
       >
-        <div className="flex items-start gap-3">
+        <div
+          className="flex items-start gap-3 cursor-pointer"
+          onClick={() => setShowDetail(true)}
+        >
           {p.photo_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -324,6 +329,10 @@ export default function InfluencerCard({
           )}
         </div>
       </div>
+
+      {showDetail && (
+        <PartnerDetail partner={p} onClose={() => setShowDetail(false)} />
+      )}
 
       {/* Reject dialog — needs a reason, so they can fix it and reapply */}
       {rejecting &&
