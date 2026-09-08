@@ -10,6 +10,12 @@ const STATUSES = [
   { key: 'rejected', label: 'Rejected', color: '#8A8F98' },
 ];
 
+const ROLES = [
+  { key: 'influencer', label: 'Creators', color: '#C13584' },
+  { key: 'vendor', label: 'Vendors', color: '#0EA97A' },
+  { key: 'freelancer', label: 'Freelancers', color: '#3A86FF' },
+];
+
 export default function StatusFilter({
   current,
 }: {
@@ -72,6 +78,28 @@ export default function StatusFilter({
             </button>
           )}
         </div>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto no-bar pb-0.5">
+        <Chip
+          active={!current.role}
+          onClick={() => setParam('role', undefined)}
+        >
+          Everyone
+        </Chip>
+
+        {ROLES.map((r) => (
+          <Chip
+            key={r.key}
+            active={current.role === r.key}
+            color={r.color}
+            onClick={() =>
+              setParam('role', current.role === r.key ? undefined : r.key)
+            }
+          >
+            {r.label}
+          </Chip>
+        ))}
       </div>
 
       <div className="flex gap-2 overflow-x-auto no-bar pb-0.5">

@@ -6,6 +6,7 @@ import StatusFilter from './StatusFilter';
 export type AdminInfluencer = {
   id: string;
   phone: string;
+  role: 'influencer' | 'vendor' | 'freelancer';
   name: string;
   email: string | null;
   photo_url: string | null;
@@ -15,6 +16,13 @@ export type AdminInfluencer = {
   city: string | null;
   bio: string | null;
   rate_per_post: number | null;
+  company_name: string | null;
+  gst_number: string | null;
+  services: string[] | null;
+  other_service: string | null;
+  portfolio_url: string | null;
+  skills: string[] | null;
+  rate_card: string | null;
   status: 'pending' | 'approved' | 'rejected' | 'paused';
   review_note: string | null;
   reviewed_at: string | null;
@@ -31,6 +39,7 @@ export default async function InfluencersPage({
 
   const query = new URLSearchParams();
   if (params.status) query.set('status', params.status);
+  if (params.role) query.set('role', params.role);
   if (params.q) query.set('q', params.q);
 
   let influencers: AdminInfluencer[] = [];
@@ -53,12 +62,12 @@ export default async function InfluencersPage({
   return (
     <div className="space-y-5">
       <header className="rise">
-        <h1 className="t-display">Creators</h1>
+        <h1 className="t-display">Lasan Hub</h1>
         <p className="t-body mt-1.5">
           {stats
             ? stats.pending > 0
               ? `${stats.pending} waiting for review`
-              : `${stats.approved} approved`
+              : `${stats.approved} approved partners`
             : 'Loading…'}
         </p>
       </header>
