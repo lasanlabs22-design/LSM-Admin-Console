@@ -98,4 +98,6 @@ export type AdminContact = {
   created_at: string;
   request_count: number;
   last_request_at: string | null;
+  photo_url: string | null;
+  logo_url: string | null;
 };

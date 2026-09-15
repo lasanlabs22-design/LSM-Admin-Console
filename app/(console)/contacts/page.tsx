@@ -56,9 +56,19 @@ export default async function ContactsPage({
             style={{ animationDelay: `${0.04 * Math.min(i, 8)}s` }}
           >
             <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#F2542D] flex items-center justify-center font-semibold text-white text-[15px]">
-                {c.name.charAt(0).toUpperCase()}
-              </div>
+              {c.photo_url ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={c.photo_url}
+                  alt={c.name}
+                  className="w-11 h-11 shrink-0 rounded-full object-cover"
+                  style={{ background: 'var(--surface-hover)' }}
+                />
+              ) : (
+                <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#F2542D] flex items-center justify-center font-semibold text-white text-[15px]">
+                  {c.name.charAt(0).toUpperCase()}
+                </div>
+              )}
 
               <div className="flex-1 min-w-0">
                 <div className="t-title">{c.name}</div>
