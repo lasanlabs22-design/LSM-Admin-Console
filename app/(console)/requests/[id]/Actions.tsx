@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminRequest } from '@/lib/api';
 import { STATUSES, STATUS_META } from '@/lib/meta';
+import AssignPanel from '../AssignPanel';
 
 export default function Actions({
   request,
@@ -20,6 +21,9 @@ export default function Actions({
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
+
+  /** The vendor panel — separate from the internal assignee above */
+  const [assigningVendor, setAssigningVendor] = useState(false);
 
   const dirty =
     assignedTo !== (request.assigned_to || '') ||
@@ -113,9 +117,36 @@ export default function Actions({
         </div>
       </div>
 
-      {/* Assignee */}
+      {/* Vendor — someone outside the team who does the work */}
+      <div
+        className="rounded-xl p-4"
+        style={{ background: 'var(--surface-hover)' }}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <span className="t-label">Send to a vendor</span>
+            <p className="t-meta mt-1.5" style={{ fontSize: 12 }}>
+              Pick an approved Lasan Hub vendor to do the work. They see the job
+              and the client&apos;s first name — nothing else.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setAssigningVendor(true)}
+            className="shrink-0 text-[13px] font-semibold px-4 py-2 rounded-xl border transition hover:opacity-80"
+            style={{
+              borderColor: 'var(--brand)',
+              color: 'var(--brand)',
+            }}
+          >
+            Choose
+          </button>
+        </div>
+      </div>
+
+      {/* Assignee — someone on your own team */}
       <div>
-        <label className="block t-label mb-3">Assigned to</label>
+        <label className="block t-label mb-3">Owned by (your team)</label>
 
         <input
           value={assignedTo}
@@ -223,6 +254,13 @@ export default function Actions({
           </span>
         )}
       </div>
+
+      {assigningVendor && (
+        <AssignPanel
+          requestId={request.id}
+          onClose={() => setAssigningVendor(false)}
+        />
+      )}
     </div>
   );
 }
