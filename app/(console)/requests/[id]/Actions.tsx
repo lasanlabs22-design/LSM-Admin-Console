@@ -6,6 +6,49 @@ import { AdminRequest } from '@/lib/api';
 import { STATUSES, STATUS_META } from '@/lib/meta';
 import AssignPanel from '../AssignPanel';
 
+/** How an assignment is doing, in words the team can act on */
+const WORK_STATUS: Record<
+  string,
+  { label: string; colour: string; note: string }
+> = {
+  offered: {
+    label: 'Waiting on them',
+    colour: '#E8AE00',
+    note: "Sent — they haven't answered yet",
+  },
+  accepted: {
+    label: 'Accepted',
+    colour: '#12B3A0',
+    note: "They've taken it on but haven't started",
+  },
+  in_progress: {
+    label: 'In progress',
+    colour: '#5F259F',
+    note: 'Work is underway',
+  },
+  completed: {
+    label: 'Completed',
+    colour: '#12B3A0',
+    note: 'They say the work is done',
+  },
+  declined: {
+    label: 'Declined',
+    colour: '#EF4444',
+    note: 'They passed — pick someone else',
+  },
+  withdrawn: {
+    label: 'Withdrawn',
+    colour: '#8A8F98',
+    note: 'We pulled this back',
+  },
+};
+
+const VERDICT: Record<string, { label: string; colour: string }> = {
+  good: { label: 'Went well', colour: '#12B3A0' },
+  okay: { label: 'It was okay', colour: '#E8AE00' },
+  poor: { label: 'Not good', colour: '#EF4444' },
+};
+
 export default function Actions({
   request,
   assignees,
@@ -22,8 +65,13 @@ export default function Actions({
   const [saved, setSaved] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
 
-  /** The vendor panel — separate from the internal assignee above */
   const [assigningVendor, setAssigningVendor] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+
+  /* Whoever currently has the work, if anyone */
+  const work: any = (request as any).assignment;
+  const live =
+    work && ['offered', 'accepted', 'in_progress'].includes(work.status);
 
   const dirty =
     assignedTo !== (request.assigned_to || '') ||
@@ -67,6 +115,26 @@ export default function Actions({
     setStatus(next);
     save({ status: next });
   };
+
+  const withdraw = async () => {
+    if (!work?.id) return;
+
+    setWithdrawing(true);
+
+    try {
+      await fetch(`/api/assignments/${work.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'withdrawn' }),
+      });
+      router.refresh();
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  const w = work ? WORK_STATUS[work.status] || WORK_STATUS.offered : null;
+  const verdict = work?.verdict ? VERDICT[work.verdict] : null;
 
   return (
     <div className="card p-5 space-y-6">
@@ -117,32 +185,137 @@ export default function Actions({
         </div>
       </div>
 
-      {/* Vendor — someone outside the team who does the work */}
-      <div
-        className="rounded-xl p-4"
-        style={{ background: 'var(--surface-hover)' }}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <span className="t-label">Send to a vendor</span>
-            <p className="t-meta mt-1.5" style={{ fontSize: 12 }}>
-              Pick an approved Lasan Hub vendor to do the work. They see the job
-              and the client&apos;s first name — nothing else.
-            </p>
-          </div>
+      {/* Who's doing the work — visible, not hidden behind a button */}
+      <div>
+        <span className="t-label">Who&apos;s doing the work</span>
 
-          <button
-            onClick={() => setAssigningVendor(true)}
-            className="shrink-0 text-[13px] font-semibold px-4 py-2 rounded-xl border transition hover:opacity-80"
+        {work ? (
+          <div
+            className="rounded-xl p-4 mt-3"
             style={{
-              borderColor: 'var(--brand)',
-              color: 'var(--brand)',
+              background: 'var(--surface-hover)',
+              border: live
+                ? `1px solid ${w!.colour}44`
+                : '1px solid transparent',
             }}
           >
-            Choose
-          </button>
-        </div>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="t-title text-[15px]">
+                  {work.company_name || work.partner_name}
+                </div>
+                <p className="t-meta mt-1" style={{ fontSize: 12.5 }}>
+                  {w!.note}
+                </p>
+              </div>
+
+              <span
+                className="shrink-0 flex items-center gap-1.5 text-[12px] font-semibold"
+                style={{ color: w!.colour }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: w!.colour }}
+                />
+                {w!.label}
+              </span>
+            </div>
+
+            {work.partner_phone && (
+              <a
+                href={`tel:+91${work.partner_phone}`}
+                className="t-num text-[13px] font-semibold inline-block mt-2"
+                style={{ color: 'var(--brand)' }}
+              >
+                {work.partner_phone}
+              </a>
+            )}
+
+            {work.decline_reason && (
+              <p
+                className="text-[12.5px] mt-2.5"
+                style={{ color: 'var(--text-faint)' }}
+              >
+                They said: {work.decline_reason}
+              </p>
+            )}
+
+            <div className="flex items-center gap-4 mt-3.5">
+              {live && (
+                <button
+                  onClick={withdraw}
+                  disabled={withdrawing}
+                  className="text-[12.5px] font-semibold transition hover:opacity-70 disabled:opacity-40"
+                  style={{ color: '#EF4444' }}
+                >
+                  {withdrawing ? 'Withdrawing…' : 'Withdraw'}
+                </button>
+              )}
+
+              <button
+                onClick={() => setAssigningVendor(true)}
+                className="text-[12.5px] font-semibold transition hover:opacity-70"
+                style={{ color: 'var(--brand)' }}
+              >
+                {live ? 'Send to someone else' : 'Assign again'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="rounded-xl p-4 mt-3 flex items-start justify-between gap-4"
+            style={{ background: 'var(--surface-hover)' }}
+          >
+            <div className="min-w-0">
+              <p className="text-[13.5px] font-semibold">Nobody yet</p>
+              <p className="t-meta mt-1" style={{ fontSize: 12 }}>
+                Pick an approved partner to do the work. They see the job and
+                the client&apos;s first name — nothing else.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setAssigningVendor(true)}
+              className="shrink-0 text-[13px] font-semibold px-4 py-2 rounded-xl border transition hover:opacity-80"
+              style={{ borderColor: 'var(--brand)', color: 'var(--brand)' }}
+            >
+              Choose
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* What the client said, once there's a verdict */}
+      {verdict && (
+        <div>
+          <span className="t-label">Client feedback</span>
+
+          <div
+            className="rounded-xl p-4 mt-3"
+            style={{ background: `${verdict.colour}12` }}
+          >
+            <span
+              className="text-[13.5px] font-semibold"
+              style={{ color: verdict.colour }}
+            >
+              {verdict.label}
+            </span>
+
+            {work.comment && (
+              <p
+                className="text-[13.5px] mt-2 leading-relaxed"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                &quot;{work.comment}&quot;
+              </p>
+            )}
+
+            <p className="t-meta mt-2.5" style={{ fontSize: 11.5 }}>
+              Only your team sees this — the partner isn&apos;t shown it
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Assignee — someone on your own team */}
       <div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
@@ -29,7 +29,7 @@ export default function AssignPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const res = await fetch(`/api/assign/${requestId}`);
       if (res.ok) setData(await res.json());
@@ -39,12 +39,12 @@ export default function AssignPanel({
     } finally {
       setLoading(false);
     }
-  };
+  }, [requestId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestId]);
+  }, [load]);
 
   const assign = async () => {
     if (!picked || busy) return;
@@ -186,16 +186,6 @@ export default function AssignPanel({
                         </p>
                       )}
 
-                      {a.verdict && (
-                        <p
-                          className="text-[12.5px] mt-2"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          Client said: <strong>{a.verdict}</strong>
-                          {a.comment && ` — ${a.comment}`}
-                        </p>
-                      )}
-
                       {['offered', 'accepted'].includes(a.status) && (
                         <button
                           onClick={() => withdraw(a.id)}
@@ -218,14 +208,14 @@ export default function AssignPanel({
             <div>
               <h3 className="t-label mb-3">
                 {data.service
-                  ? `Vendors who do ${data.service}`
-                  : 'Approved vendors'}
+                  ? `Partners who do ${data.service}`
+                  : 'Approved partners'}
               </h3>
 
               {data.vendors.length === 0 ? (
                 <div className="card p-6 text-center">
                   <p className="t-meta">
-                    No approved vendors yet. They sign up through Lasan Hub.
+                    No approved partners yet. They sign up through Lasan Hub.
                   </p>
                 </div>
               ) : (
@@ -291,26 +281,32 @@ export default function AssignPanel({
                           </a>
                         </div>
 
-                        {v.services?.length > 0 && (
+                        {[...(v.services || []), ...(v.skills || [])].length >
+                          0 && (
                           <div className="flex flex-wrap gap-1.5 mt-2.5">
-                            {v.services.slice(0, 5).map((s: string) => (
-                              <span
-                                key={s}
-                                className="text-[11px] px-2 py-1 rounded-md"
-                                style={{
-                                  background: 'var(--surface-hover)',
-                                  color: 'var(--text-muted)',
-                                }}
-                              >
-                                {s}
-                              </span>
-                            ))}
-                            {v.services.length > 5 && (
+                            {[...(v.services || []), ...(v.skills || [])]
+                              .slice(0, 5)
+                              .map((s: string) => (
+                                <span
+                                  key={s}
+                                  className="text-[11px] px-2 py-1 rounded-md"
+                                  style={{
+                                    background: 'var(--surface-hover)',
+                                    color: 'var(--text-muted)',
+                                  }}
+                                >
+                                  {s}
+                                </span>
+                              ))}
+                            {[...(v.services || []), ...(v.skills || [])]
+                              .length > 5 && (
                               <span
                                 className="text-[11px] px-1 py-1"
                                 style={{ color: 'var(--text-faint)' }}
                               >
-                                +{v.services.length - 5}
+                                +
+                                {[...(v.services || []), ...(v.skills || [])]
+                                  .length - 5}
                               </span>
                             )}
                           </div>
