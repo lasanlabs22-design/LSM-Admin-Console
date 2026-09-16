@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { adminFetch } from '@/lib/api';
+import AutoRefresh from '@/components/AutoRefresh';
 
 const STATUS: Record<string, { label: string; colour: string; note: string }> =
   {
@@ -57,6 +58,7 @@ export default async function WorkPage({
 
   return (
     <div className="space-y-5">
+      <AutoRefresh />
       <header className="rise">
         <h1 className="t-display">Work in progress</h1>
         <p className="t-body mt-1.5">

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { adminFetch, Stats } from '@/lib/api';
 import { STATUS_META, TYPE_META } from '@/lib/meta';
 import DonutChart from '@/components/DonutChart';
+import AutoRefresh from '@/components/AutoRefresh';
 
 export default async function DashboardPage() {
   let stats: Stats | null = null;
@@ -15,14 +16,18 @@ export default async function DashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="card p-6 rise" style={{ borderColor: 'rgba(217,48,37,0.3)' }}>
+      <div
+        className="card p-6 rise"
+        style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+      >
+        <AutoRefresh />
+
         <div className="t-title mb-1" style={{ color: '#F87171' }}>
           Could not load the dashboard
         </div>
         <p className="t-body">{error}</p>
         <p className="t-meta mt-3">
-          Is the backend running? It should be at{' '}
-          <span className="t-num">localhost:3000</span>.
+          The backend may be restarting. This page retries on its own.
         </p>
       </div>
     );
@@ -33,8 +38,16 @@ export default async function DashboardPage() {
 
   const statusSlices = [
     { label: 'New', value: r.new, color: STATUS_META.new.color },
-    { label: 'Contacted', value: r.contacted, color: STATUS_META.contacted.color },
-    { label: 'In Progress', value: r.in_progress, color: STATUS_META.in_progress.color },
+    {
+      label: 'Contacted',
+      value: r.contacted,
+      color: STATUS_META.contacted.color,
+    },
+    {
+      label: 'In Progress',
+      value: r.in_progress,
+      color: STATUS_META.in_progress.color,
+    },
     { label: 'Closed', value: r.closed, color: STATUS_META.closed.color },
   ].filter((s) => s.value > 0);
 
@@ -46,6 +59,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-9">
+      <AutoRefresh />
       {/* Heading */}
       <header className="rise">
         <h1 className="t-display">Dashboard</h1>
@@ -99,10 +113,7 @@ export default async function DashboardPage() {
 
       {/* Charts */}
       <div className="grid lg:grid-cols-2 gap-4">
-        <section
-          className="card p-6 rise"
-          style={{ animationDelay: '0.1s' }}
-        >
+        <section className="card p-6 rise" style={{ animationDelay: '0.1s' }}>
           <div className="t-label mb-5">Status breakdown</div>
           {statusSlices.length > 0 ? (
             <DonutChart data={statusSlices} />
@@ -111,10 +122,7 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <section
-          className="card p-6 rise"
-          style={{ animationDelay: '0.15s' }}
-        >
+        <section className="card p-6 rise" style={{ animationDelay: '0.15s' }}>
           <div className="t-label mb-5">By request type</div>
           {typeSlices.length > 0 ? (
             <DonutChart data={typeSlices} />

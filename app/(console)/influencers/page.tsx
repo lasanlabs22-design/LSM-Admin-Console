@@ -3,6 +3,7 @@ import { adminFetch } from '@/lib/api';
 import InfluencerCard from './InfluencerCard';
 import StatusFilter from './StatusFilter';
 import HubRequest, { HubRequestItem } from './HubRequest';
+import AutoRefresh from '@/components/AutoRefresh';
 
 export type AdminInfluencer = {
   id: string;
@@ -80,6 +81,7 @@ export default async function InfluencersPage({
 
   return (
     <div className="space-y-5">
+      <AutoRefresh />
       <header className="rise">
         <h1 className="t-display">Lasan Hub</h1>
         <p className="t-body mt-1.5">

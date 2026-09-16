@@ -2,17 +2,23 @@ import Link from 'next/link';
 import { adminFetch, AdminRequest } from '@/lib/api';
 import { STATUS_META, TYPE_META, timeAgo } from '@/lib/meta';
 import Filters from './Filters';
+import AutoRefresh from '@/components/AutoRefresh';
 
 /** Groups requests under Today / Yesterday / This week / Earlier */
 function groupByDay(requests: AdminRequest[]) {
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
   const groups: { label: string; items: AdminRequest[] }[] = [];
 
   const bucketFor = (iso: string) => {
     const d = new Date(iso);
     const days = Math.floor(
-      (startOfToday.getTime() - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) /
+      (startOfToday.getTime() -
+        new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) /
         86400000
     );
 
@@ -65,6 +71,8 @@ export default async function RequestsPage({
 
   return (
     <div className="space-y-5">
+      <AutoRefresh />
+
       <header className="rise">
         <h1 className="t-display">Requests</h1>
         <p className="t-body mt-1.5">
@@ -77,7 +85,10 @@ export default async function RequestsPage({
       </div>
 
       {error && (
-        <div className="card p-4" style={{ borderColor: 'rgba(217,48,37,0.3)' }}>
+        <div
+          className="card p-4"
+          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+        >
           <p className="text-[13px]" style={{ color: '#EF4444' }}>
             {error}
           </p>
@@ -169,6 +180,9 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
     emoji: '📄',
   };
 
+  /** Who outside the team is doing this, if anyone */
+  const partner = (r as any).assignment;
+
   // Closed requests recede; new ones stand out
   const isClosed = r.status === 'closed';
   const isNew = r.status === 'new';
@@ -211,6 +225,19 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
                 }}
               >
                 {r.assigned_to}
+              </span>
+            )}
+
+            {/* Out with a partner — so the list says so without a click */}
+            {partner && (
+              <span
+                className="text-[10.5px] font-medium px-2 py-1 rounded-md"
+                style={{
+                  color: '#0EA97A',
+                  background: 'rgba(14,169,122,0.12)',
+                }}
+              >
+                → {partner.company_name || partner.partner_name}
               </span>
             )}
           </div>
