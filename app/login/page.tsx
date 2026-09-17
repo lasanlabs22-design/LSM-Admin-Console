@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -15,8 +14,14 @@ export default function LoginPage() {
   const [shake, setShake] = useState(false);
 
   // Fixed positions, worked out once so they don't jump on re-render
-   const [embers, setEmbers] = useState<
-    { left: number; size: number; duration: number; delay: number; drift: string }[]
+  const [embers, setEmbers] = useState<
+    {
+      left: number;
+      size: number;
+      duration: number;
+      delay: number;
+      drift: string;
+    }[]
   >([]);
 
   // Random values differ between server and browser, which breaks hydration.
@@ -162,7 +167,7 @@ export default function LoginPage() {
             <div
               className="relative w-[62px] h-[62px] rounded-2xl flex items-center justify-center overflow-hidden"
               style={{
-                background: 'linear-gradient(135deg, #FF9A4D, #F2542D)',
+                background: 'linear-gradient(135deg, #FF9A4D, var(--brand))',
                 boxShadow: '0 12px 40px rgba(255,107,53,0.42)',
               }}
             >
@@ -171,7 +176,11 @@ export default function LoginPage() {
                 className="absolute top-0 bottom-0 w-8 anim-shimmer"
                 style={{ background: 'rgba(255,255,255,0.28)' }}
               />
-              <svg viewBox="0 0 24 24" fill="white" className="relative w-7 h-7">
+              <svg
+                viewBox="0 0 24 24"
+                fill="white"
+                className="relative w-7 h-7"
+              >
                 <path d="M17 18a2 2 0 1 1 0 4 2 2 0 0 1 0-4ZM7 18a2 2 0 1 1 0 4 2 2 0 0 1 0-4ZM7.2 14.6 7 15a1 1 0 0 0 1 1h12v-2H8.4l1.1-2H17a2 2 0 0 0 1.8-1L22 5H6.2l-.9-2H2v2h2l3.6 7.6-1.4 2Z" />
               </svg>
             </div>
@@ -205,9 +214,7 @@ export default function LoginPage() {
           style={{
             animationDelay: '0.28s',
             transform: shake ? undefined : undefined,
-            animation: shake
-              ? 'fadeSlide 0.6s both, shakeX 0.42s'
-              : undefined,
+            animation: shake ? 'fadeSlide 0.6s both, shakeX 0.42s' : undefined,
           }}
         >
           <div
@@ -243,9 +250,7 @@ export default function LoginPage() {
                 fill="currentColor"
                 className="w-[17px] h-[17px] shrink-0 transition-colors duration-200"
                 style={{
-                  color: focused
-                    ? '#FF8A3D'
-                    : 'rgba(255,255,255,0.3)',
+                  color: focused ? 'var(--brand)' : 'rgba(255,255,255,0.3)',
                 }}
               >
                 <path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM9 8V6a3 3 0 1 1 6 0v2H9Z" />
@@ -268,7 +273,7 @@ export default function LoginPage() {
               {password.length > 0 && !busy && (
                 <span
                   className="w-1.5 h-1.5 rounded-full shrink-0"
-                  style={{ background: '#FF8A3D' }}
+                  style={{ background: 'var(--brand)' }}
                 />
               )}
             </div>
@@ -289,8 +294,8 @@ export default function LoginPage() {
               className="relative w-full mt-5 h-[50px] rounded-xl font-semibold text-[15px] text-white overflow-hidden transition-all duration-200 disabled:opacity-25 disabled:cursor-not-allowed"
               style={{
                 background: done
-                  ? '#12B3A0'
-                  : 'linear-gradient(135deg, #FF9A4D, #F2542D)',
+                  ? 'var(--good)'
+                  : 'linear-gradient(135deg, #FF9A4D, var(--brand))',
                 boxShadow:
                   busy || !password.trim()
                     ? 'none'
@@ -319,9 +324,7 @@ export default function LoginPage() {
                   </>
                 ) : busy ? (
                   <>
-                    <span
-                      className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"
-                    />
+                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                     Checking
                   </>
                 ) : (

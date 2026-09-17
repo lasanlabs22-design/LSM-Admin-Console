@@ -35,7 +35,7 @@ export default function AccessHolder({ person }: { person: any }) {
           className="w-9 h-9 rounded-full object-cover shrink-0"
         />
       ) : (
-        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#F2542D] flex items-center justify-center font-semibold text-white text-[12px]">
+        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center font-semibold text-white text-[12px]">
           {person.name.charAt(0).toUpperCase()}
         </div>
       )}
@@ -62,7 +62,7 @@ export default function AccessHolder({ person }: { person: any }) {
         onClick={revoke}
         disabled={busy}
         className="text-[12px] font-semibold shrink-0 transition hover:opacity-70 disabled:opacity-40"
-        style={{ color: '#EF4444' }}
+        style={{ color: 'var(--bad)' }}
       >
         {busy ? '…' : 'Revoke'}
       </button>

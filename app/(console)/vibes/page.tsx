@@ -68,13 +68,13 @@ export default async function VibesPage() {
           className="grid grid-cols-2 lg:grid-cols-4 gap-3 rise"
           style={{ animationDelay: '0.05s' }}
         >
-          <Stat label="Live" value={stats.live} accent="#12B3A0" />
+          <Stat label="Live" value={stats.live} accent="var(--good)" />
           <Stat label="Hidden" value={stats.hidden} accent="#8A8F98" />
           <Stat label="From users" value={stats.from_users} accent="#7B2FF7" />
           <Stat
             label="Total views"
             value={stats.total_views}
-            accent="#FF6B35"
+            accent="var(--brand)"
           />
         </div>
       )}
@@ -89,7 +89,7 @@ export default async function VibesPage() {
           className="card p-4"
           style={{ borderColor: 'rgba(217,48,37,0.3)' }}
         >
-          <p className="text-[13px]" style={{ color: '#EF4444' }}>
+          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
           </p>
         </div>

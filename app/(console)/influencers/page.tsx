@@ -101,10 +101,10 @@ export default async function InfluencersPage({
           <Stat
             label="Waiting"
             value={stats.pending}
-            accent="#E8AE00"
+            accent="var(--warn)"
             urgent={stats.pending > 0}
           />
-          <Stat label="Approved" value={stats.approved} accent="#12B3A0" />
+          <Stat label="Approved" value={stats.approved} accent="var(--good)" />
           <Stat label="Creators" value={stats.influencers} accent="#C13584" />
           <Stat label="Vendors" value={stats.vendors} accent="#0EA97A" />
           <Stat
@@ -162,7 +162,7 @@ export default async function InfluencersPage({
           className="card p-4"
           style={{ borderColor: 'rgba(217,48,37,0.3)' }}
         >
-          <p className="text-[13px]" style={{ color: '#EF4444' }}>
+          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
           </p>
         </div>

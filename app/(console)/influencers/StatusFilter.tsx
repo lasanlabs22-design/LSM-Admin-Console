@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const STATUSES = [
-  { key: 'pending', label: 'Waiting', color: '#E8AE00' },
-  { key: 'approved', label: 'Approved', color: '#12B3A0' },
+  { key: 'pending', label: 'Waiting', color: 'var(--warn)' },
+  { key: 'approved', label: 'Approved', color: 'var(--good)' },
   { key: 'paused', label: 'Paused', color: '#3A86FF' },
   { key: 'rejected', label: 'Rejected', color: '#8A8F98' },
 ];

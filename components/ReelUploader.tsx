@@ -248,7 +248,8 @@ export default function ReelUploader() {
                   className="h-full rounded-full transition-all duration-200"
                   style={{
                     width: `${progress}%`,
-                    background: 'linear-gradient(90deg,#FF8A3D,#F2542D)',
+                    background:
+                      'linear-gradient(90deg,var(--brand),var(--brand))',
                   }}
                 />
               </div>
@@ -259,7 +260,9 @@ export default function ReelUploader() {
             onClick={upload}
             disabled={busy}
             className="w-full text-white font-semibold text-[14px] py-3 rounded-xl transition disabled:opacity-40 hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg,#FF8A3D,#F2542D)' }}
+            style={{
+              background: 'linear-gradient(135deg,var(--brand),var(--brand))',
+            }}
           >
             {busy
               ? progress >= 100
@@ -271,7 +274,7 @@ export default function ReelUploader() {
       )}
 
       {error && (
-        <p className="text-[13px] mt-3" style={{ color: '#EF4444' }}>
+        <p className="text-[13px] mt-3" style={{ color: 'var(--bad)' }}>
           {error}
         </p>
       )}

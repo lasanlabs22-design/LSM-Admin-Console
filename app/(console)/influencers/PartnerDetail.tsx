@@ -10,8 +10,8 @@ const ROLE_META: Record<string, { label: string; color: string }> = {
 };
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Waiting for review', color: '#E8AE00' },
-  approved: { label: 'Approved', color: '#12B3A0' },
+  pending: { label: 'Waiting for review', color: 'var(--warn)' },
+  approved: { label: 'Approved', color: 'var(--good)' },
   paused: { label: 'Paused', color: '#3A86FF' },
   rejected: { label: 'Rejected', color: '#8A8F98' },
 };
@@ -55,7 +55,9 @@ export default function PartnerDetail({
         {/* Header */}
         <div
           className="p-6 pb-5 relative overflow-hidden"
-          style={{ background: `linear-gradient(135deg, ${role.color}22, transparent)` }}
+          style={{
+            background: `linear-gradient(135deg, ${role.color}22, transparent)`,
+          }}
         >
           <button
             onClick={onClose}

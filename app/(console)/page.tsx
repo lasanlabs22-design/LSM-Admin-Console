@@ -101,7 +101,7 @@ export default async function DashboardPage() {
         <Stat
           label="Users"
           value={stats.contacts.total}
-          accent="#FF6B35"
+          accent="var(--brand)"
           href="/contacts"
           sub={
             stats.contacts.this_week > 0
@@ -178,7 +178,7 @@ export default async function DashboardPage() {
                     }}
                   />
 
-                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#F2542D] flex items-center justify-center text-[13px] font-semibold text-white shrink-0">
+                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center text-[13px] font-semibold text-white shrink-0">
                     {w.assigned_to.charAt(0).toUpperCase()}
                   </div>
 

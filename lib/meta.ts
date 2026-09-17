@@ -3,8 +3,16 @@ export const STATUS_META: Record<
   { label: string; color: string; bg: string }
 > = {
   new: { label: 'New', color: '#3A86FF', bg: 'rgba(58,134,255,0.12)' },
-  contacted: { label: 'Contacted', color: '#E8AE00', bg: 'rgba(232,174,0,0.12)' },
-  in_progress: { label: 'In Progress', color: '#12B3A0', bg: 'rgba(18,179,160,0.12)' },
+  contacted: {
+    label: 'Contacted',
+    color: 'var(--warn)',
+    bg: 'rgba(232,174,0,0.12)',
+  },
+  in_progress: {
+    label: 'In Progress',
+    color: 'var(--good)',
+    bg: 'rgba(18,179,160,0.12)',
+  },
   closed: { label: 'Closed', color: '#8A8F98', bg: 'rgba(138,143,152,0.12)' },
 };
 
@@ -12,9 +20,9 @@ export const TYPE_META: Record<
   string,
   { label: string; color: string; emoji: string }
 > = {
-  service: { label: 'Service', color: '#FF6B35', emoji: '📣' },
+  service: { label: 'Service', color: 'var(--brand)', emoji: '📣' },
   custom: { label: 'Custom', color: '#7B2FF7', emoji: '🛠️' },
-  plan: { label: 'Plan', color: '#12B3A0', emoji: '💼' },
+  plan: { label: 'Plan', color: 'var(--good)', emoji: '💼' },
   influencer: { label: 'Influencer', color: '#C13584', emoji: '⭐' },
 };
 

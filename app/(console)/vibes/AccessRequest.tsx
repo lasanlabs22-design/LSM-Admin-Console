@@ -58,7 +58,7 @@ export default function AccessRequest({ person }: { person: any }) {
               style={{ background: 'var(--surface-hover)' }}
             />
           ) : (
-            <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#F2542D] flex items-center justify-center font-semibold text-white text-[13px]">
+            <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center font-semibold text-white text-[13px]">
               {person.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -110,7 +110,7 @@ export default function AccessRequest({ person }: { person: any }) {
         )}
 
         {error && (
-          <p className="text-[12px] mt-2" style={{ color: '#EF4444' }}>
+          <p className="text-[12px] mt-2" style={{ color: 'var(--bad)' }}>
             {error}
           </p>
         )}
@@ -129,7 +129,7 @@ export default function AccessRequest({ person }: { person: any }) {
             onClick={() => setConfirming('grant')}
             disabled={busy}
             className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold text-white transition disabled:opacity-40"
-            style={{ background: '#12B3A0' }}
+            style={{ background: 'var(--good)' }}
           >
             Give access
           </button>
@@ -165,7 +165,8 @@ export default function AccessRequest({ person }: { person: any }) {
                   disabled={busy}
                   className="flex-1 py-3 rounded-xl font-semibold text-[14px] text-white transition disabled:opacity-30"
                   style={{
-                    background: confirming === 'grant' ? '#12B3A0' : '#D93025',
+                    background:
+                      confirming === 'grant' ? 'var(--good)' : 'var(--bad)',
                   }}
                 >
                   {busy

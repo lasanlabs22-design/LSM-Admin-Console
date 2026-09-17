@@ -6,12 +6,12 @@ const STATUS: Record<string, { label: string; colour: string; note: string }> =
   {
     offered: {
       label: 'Waiting on them',
-      colour: '#E8AE00',
+      colour: 'var(--warn)',
       note: "Sent — they haven't answered yet",
     },
     accepted: {
       label: 'Accepted',
-      colour: '#12B3A0',
+      colour: 'var(--good)',
       note: "They've taken it on but not started",
     },
     in_progress: {
@@ -21,7 +21,7 @@ const STATUS: Record<string, { label: string; colour: string; note: string }> =
     },
     completed: {
       label: 'Completed',
-      colour: '#12B3A0',
+      colour: 'var(--good)',
       note: "They say it's done",
     },
   };
@@ -76,14 +76,14 @@ export default async function WorkPage({
           <Stat
             label="Awaiting reply"
             value={stats.offered}
-            accent="#E8AE00"
+            accent="var(--warn)"
             urgent={stats.offered > 0}
             href="/work?status=offered"
           />
           <Stat
             label="Accepted"
             value={stats.accepted}
-            accent="#12B3A0"
+            accent="var(--good)"
             href="/work?status=accepted"
           />
           <Stat
@@ -116,7 +116,7 @@ export default async function WorkPage({
           className="card p-4"
           style={{ borderColor: 'rgba(217,48,37,0.3)' }}
         >
-          <p className="text-[13px]" style={{ color: '#EF4444' }}>
+          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
           </p>
         </div>

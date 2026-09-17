@@ -28,7 +28,7 @@ export default async function RequestDetailPage({
   if (error || !request) {
     return (
       <div className="card p-6" style={{ borderColor: 'rgba(217,48,37,0.3)' }}>
-        <div className="t-title mb-1" style={{ color: '#EF4444' }}>
+        <div className="t-title mb-1" style={{ color: 'var(--bad)' }}>
           Could not load this request
         </div>
         <p className="t-body">{error}</p>
@@ -78,9 +78,7 @@ export default async function RequestDetailPage({
         }}
       >
         <span className="absolute -top-16 -right-12 w-44 h-44 rounded-full bg-white/10" />
-        <span
-          className="absolute -bottom-10 -left-8 w-32 h-32 rounded-full bg-white/[0.07]"
-        />
+        <span className="absolute -bottom-10 -left-8 w-32 h-32 rounded-full bg-white/[0.07]" />
 
         <div className="relative">
           <div
@@ -247,13 +245,7 @@ function Card({
   );
 }
 
-function Row({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex gap-4">
       <span

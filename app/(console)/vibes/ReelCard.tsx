@@ -228,7 +228,7 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
               onClick={remove}
               disabled={busy}
               className="flex-1 text-[12px] font-semibold py-2 rounded-lg text-white disabled:opacity-50"
-              style={{ background: '#D93025' }}
+              style={{ background: 'var(--bad)' }}
             >
               {busy ? 'Deleting…' : 'Delete'}
             </button>
@@ -266,7 +266,7 @@ function IconButton({
       className="w-6 h-6 rounded-md flex items-center justify-center transition disabled:opacity-30 hover:opacity-100"
       style={{
         background: 'var(--surface-hover)',
-        color: danger ? '#EF4444' : 'var(--text-faint)',
+        color: danger ? 'var(--bad)' : 'var(--text-faint)',
       }}
     >
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">

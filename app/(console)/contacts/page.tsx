@@ -42,7 +42,7 @@ export default async function ContactsPage({
           className="card p-4"
           style={{ borderColor: 'rgba(217,48,37,0.3)' }}
         >
-          <p className="text-[13px]" style={{ color: '#EF4444' }}>
+          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
           </p>
         </div>
@@ -65,7 +65,7 @@ export default async function ContactsPage({
                   style={{ background: 'var(--surface-hover)' }}
                 />
               ) : (
-                <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-[#FF8A3D] to-[#F2542D] flex items-center justify-center font-semibold text-white text-[15px]">
+                <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center font-semibold text-white text-[15px]">
                   {c.name.charAt(0).toUpperCase()}
                 </div>
               )}

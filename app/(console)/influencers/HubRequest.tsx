@@ -144,7 +144,7 @@ export default function HubRequest({
       </p>
 
       {error && (
-        <p className="text-[12px] mt-2" style={{ color: '#EF4444' }}>
+        <p className="text-[12px] mt-2" style={{ color: 'var(--bad)' }}>
           {error}
         </p>
       )}
@@ -163,7 +163,7 @@ export default function HubRequest({
             onClick={() => patch('closed')}
             disabled={busy}
             className="flex-1 py-2 rounded-lg text-[12.5px] font-semibold text-white transition disabled:opacity-40"
-            style={{ background: '#12B3A0' }}
+            style={{ background: 'var(--good)' }}
           >
             {busy ? '…' : 'Mark resolved'}
           </button>

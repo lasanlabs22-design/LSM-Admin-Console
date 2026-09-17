@@ -13,12 +13,12 @@ const WORK_STATUS: Record<
 > = {
   offered: {
     label: 'Waiting on them',
-    colour: '#E8AE00',
+    colour: 'var(--warn)',
     note: "Sent — they haven't answered yet",
   },
   accepted: {
     label: 'Accepted',
-    colour: '#12B3A0',
+    colour: 'var(--good)',
     note: "They've taken it on but haven't started",
   },
   in_progress: {
@@ -28,12 +28,12 @@ const WORK_STATUS: Record<
   },
   completed: {
     label: 'Completed',
-    colour: '#12B3A0',
+    colour: 'var(--good)',
     note: 'They say the work is done',
   },
   declined: {
     label: 'Declined',
-    colour: '#EF4444',
+    colour: 'var(--bad)',
     note: 'They passed — pick someone else',
   },
   withdrawn: {
@@ -44,9 +44,9 @@ const WORK_STATUS: Record<
 };
 
 const VERDICT: Record<string, { label: string; colour: string }> = {
-  good: { label: 'Went well', colour: '#12B3A0' },
-  okay: { label: 'It was okay', colour: '#E8AE00' },
-  poor: { label: 'Not good', colour: '#EF4444' },
+  good: { label: 'Went well', colour: 'var(--good)' },
+  okay: { label: 'It was okay', colour: 'var(--warn)' },
+  poor: { label: 'Not good', colour: 'var(--bad)' },
 };
 
 export default function Actions({
@@ -246,7 +246,7 @@ export default function Actions({
                   onClick={withdraw}
                   disabled={withdrawing}
                   className="text-[12.5px] font-semibold transition hover:opacity-70 disabled:opacity-40"
-                  style={{ color: '#EF4444' }}
+                  style={{ color: 'var(--bad)' }}
                 >
                   {withdrawing ? 'Withdrawing…' : 'Withdraw'}
                 </button>
@@ -397,7 +397,7 @@ export default function Actions({
           disabled={busy || !dirty}
           className="text-white font-semibold text-[14px] px-5 py-2.5 rounded-xl transition disabled:opacity-25 disabled:cursor-not-allowed hover:opacity-90"
           style={{
-            background: 'linear-gradient(135deg, #FF8A3D, #F2542D)',
+            background: 'linear-gradient(135deg, var(--brand), var(--brand))',
           }}
         >
           {busy ? 'Saving…' : 'Save changes'}
@@ -406,7 +406,7 @@ export default function Actions({
         {saved && (
           <span
             className="flex items-center gap-1.5 text-[13px] font-semibold"
-            style={{ color: '#12B3A0' }}
+            style={{ color: 'var(--good)' }}
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
               <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2Z" />
@@ -416,7 +416,7 @@ export default function Actions({
         )}
 
         {failed && (
-          <span className="text-[13px]" style={{ color: '#EF4444' }}>
+          <span className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {failed}
           </span>
         )}

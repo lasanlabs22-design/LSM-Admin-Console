@@ -87,7 +87,7 @@ export default function DeleteContact({
       <button
         onClick={openDialog}
         className="text-[12px] font-semibold transition hover:opacity-70"
-        style={{ color: '#EF4444' }}
+        style={{ color: 'var(--bad)' }}
       >
         Delete all data
       </button>
@@ -102,7 +102,7 @@ export default function DeleteContact({
             }}
           >
             <div className="card w-full max-w-md p-6">
-              <h3 className="t-title" style={{ color: '#EF4444' }}>
+              <h3 className="t-title" style={{ color: 'var(--bad)' }}>
                 Delete everything for {name}?
               </h3>
 
@@ -156,7 +156,7 @@ export default function DeleteContact({
                 className="w-full rounded-xl px-4 h-11 text-[14px] border outline-none"
                 style={{
                   background: 'var(--surface-hover)',
-                  borderColor: matches ? '#EF4444' : 'var(--line)',
+                  borderColor: matches ? 'var(--bad)' : 'var(--line)',
                   color: 'var(--text)',
                 }}
               />
@@ -165,7 +165,7 @@ export default function DeleteContact({
                 <p
                   className="text-[13px] mt-3"
                   style={{
-                    color: '#EF4444',
+                    color: 'var(--bad)',
                   }}
                 >
                   {error}
@@ -178,7 +178,7 @@ export default function DeleteContact({
                   disabled={!matches || busy}
                   className="flex-1 py-3 rounded-xl font-semibold text-[14px] text-white transition disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{
-                    background: '#D93025',
+                    background: 'var(--bad)',
                   }}
                 >
                   {busy ? 'Deleting…' : 'Delete permanently'}

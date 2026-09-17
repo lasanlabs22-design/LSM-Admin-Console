@@ -10,10 +10,14 @@ const STATUS_META: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  pending: { label: 'Waiting', color: '#E8AE00', bg: 'rgba(232,174,0,0.12)' },
+  pending: {
+    label: 'Waiting',
+    color: 'var(--warn)',
+    bg: 'rgba(232,174,0,0.12)',
+  },
   approved: {
     label: 'Approved',
-    color: '#12B3A0',
+    color: 'var(--good)',
     bg: 'rgba(18,179,160,0.12)',
   },
   paused: { label: 'Paused', color: '#3A86FF', bg: 'rgba(58,134,255,0.12)' },
@@ -285,7 +289,7 @@ export default function InfluencerCard({
         )}
 
         {error && (
-          <p className="text-[12px] mt-2" style={{ color: '#EF4444' }}>
+          <p className="text-[12px] mt-2" style={{ color: 'var(--bad)' }}>
             {error}
           </p>
         )}
@@ -297,7 +301,7 @@ export default function InfluencerCard({
               onClick={() => patch({ status: 'approved' })}
               disabled={busy}
               className="flex-1 py-2.5 rounded-xl text-[13px] font-semibold text-white transition disabled:opacity-40"
-              style={{ background: '#12B3A0' }}
+              style={{ background: 'var(--good)' }}
             >
               {busy ? '…' : 'Approve'}
             </button>
@@ -322,7 +326,10 @@ export default function InfluencerCard({
               }}
               disabled={busy}
               className="px-4 py-2.5 rounded-xl text-[13px] font-semibold border transition disabled:opacity-40"
-              style={{ borderColor: 'rgba(217,48,37,0.35)', color: '#EF4444' }}
+              style={{
+                borderColor: 'rgba(217,48,37,0.35)',
+                color: 'var(--bad)',
+              }}
             >
               Reject
             </button>
@@ -375,7 +382,7 @@ export default function InfluencerCard({
                   }
                   disabled={busy || note.trim().length < 3}
                   className="flex-1 py-3 rounded-xl font-semibold text-[14px] text-white transition disabled:opacity-30"
-                  style={{ background: '#D93025' }}
+                  style={{ background: 'var(--bad)' }}
                 >
                   {busy ? 'Saving…' : 'Reject'}
                 </button>

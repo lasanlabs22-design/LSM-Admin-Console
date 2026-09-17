@@ -5,11 +5,11 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
 const STATUS: Record<string, { label: string; color: string }> = {
-  offered: { label: 'Waiting on them', color: '#E8AE00' },
-  accepted: { label: 'Accepted', color: '#12B3A0' },
+  offered: { label: 'Waiting on them', color: 'var(--warn)' },
+  accepted: { label: 'Accepted', color: 'var(--good)' },
   in_progress: { label: 'In progress', color: '#5F259F' },
-  completed: { label: 'Completed', color: '#12B3A0' },
-  declined: { label: 'Declined', color: '#EF4444' },
+  completed: { label: 'Completed', color: 'var(--good)' },
+  declined: { label: 'Declined', color: 'var(--bad)' },
   withdrawn: { label: 'Withdrawn', color: '#8A8F98' },
 };
 
@@ -100,9 +100,7 @@ export default function AssignPanel({
     picked.some((n) => n.toLowerCase() === (v.name || '').toLowerCase())
   );
 
-  const others = (data?.vendors || []).filter(
-    (v: any) => !chosen.includes(v)
-  );
+  const others = (data?.vendors || []).filter((v: any) => !chosen.includes(v));
 
   return createPortal(
     <div
@@ -145,7 +143,7 @@ export default function AssignPanel({
 
         <div className="px-6 pb-6 space-y-6">
           {error && (
-            <p className="text-[13px]" style={{ color: '#EF4444' }}>
+            <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
               {error}
             </p>
           )}
@@ -203,7 +201,7 @@ export default function AssignPanel({
                           onClick={() => withdraw(a.id)}
                           disabled={busy}
                           className="text-[12px] font-semibold mt-2.5 transition hover:opacity-70"
-                          style={{ color: '#EF4444' }}
+                          style={{ color: 'var(--bad)' }}
                         >
                           Withdraw
                         </button>
@@ -322,7 +320,11 @@ function PartnerRow({
   const tags = [...(v.services || []), ...(v.skills || [])];
 
   const roleColour =
-    v.role === 'vendor' ? '#0EA97A' : v.role === 'freelancer' ? '#3A86FF' : '#C13584';
+    v.role === 'vendor'
+      ? '#0EA97A'
+      : v.role === 'freelancer'
+        ? '#3A86FF'
+        : '#C13584';
 
   return (
     <button
@@ -362,7 +364,7 @@ function PartnerRow({
                 className="text-[10px] font-semibold px-2 py-0.5 rounded"
                 style={{
                   background: 'rgba(18,179,160,0.14)',
-                  color: '#12B3A0',
+                  color: 'var(--good)',
                 }}
               >
                 DOES THIS
