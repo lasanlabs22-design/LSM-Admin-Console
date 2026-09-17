@@ -1,5 +1,5 @@
+import Link from 'next/link';
 import { adminFetch } from '@/lib/api';
-import { timeAgo } from '@/lib/meta';
 import ReelUploader from '@/components/ReelUploader';
 import ReelCard from './ReelCard';
 
@@ -43,13 +43,23 @@ export default async function VibesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rise">
-        <h1 className="t-display">Lasan Vibes</h1>
-        <p className="t-body mt-1.5">
-          {stats
-            ? `${stats.live} live · ${stats.total_views} views`
-            : 'Loading…'}
-        </p>
+      <header className="rise flex items-start justify-between gap-4">
+        <div>
+          <h1 className="t-display">Lasan Vibes</h1>
+          <p className="t-body mt-1.5">
+            {stats
+              ? `${stats.live} live · ${stats.total_views} views`
+              : 'Loading…'}
+          </p>
+        </div>
+
+        <Link
+          href="/vibes/access"
+          className="shrink-0 text-[13px] font-semibold px-4 py-2 rounded-xl border transition hover:opacity-80"
+          style={{ borderColor: 'var(--brand)', color: 'var(--brand)' }}
+        >
+          Posting access →
+        </Link>
       </header>
 
       {/* Numbers */}
