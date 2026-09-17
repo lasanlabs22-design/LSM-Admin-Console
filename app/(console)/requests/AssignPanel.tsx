@@ -24,7 +24,7 @@ export default function AssignPanel({
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [picked, setPicked] = useState<string | null>(null);
+  const [pickedId, setPickedId] = useState<string | null>(null);
   const [brief, setBrief] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +47,7 @@ export default function AssignPanel({
   }, [load]);
 
   const assign = async () => {
-    if (!picked || busy) return;
+    if (!pickedId || busy) return;
 
     setBusy(true);
     setError('');
@@ -56,7 +56,7 @@ export default function AssignPanel({
       const res = await fetch(`/api/assign/${requestId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ partnerId: picked, brief: brief.trim() }),
+        body: JSON.stringify({ partnerId: pickedId, brief: brief.trim() }),
       });
 
       if (!res.ok) {
@@ -65,7 +65,7 @@ export default function AssignPanel({
         return;
       }
 
-      setPicked(null);
+      setPickedId(null);
       setBrief('');
       await load();
       router.refresh();
@@ -91,6 +91,18 @@ export default function AssignPanel({
       setBusy(false);
     }
   };
+
+  /* The customer picked these people by name. Show them at the top,
+     because assigning anyone else would be ignoring what was asked for. */
+  const picked: string[] = data?.pickedNames || [];
+
+  const chosen = (data?.vendors || []).filter((v: any) =>
+    picked.some((n) => n.toLowerCase() === (v.name || '').toLowerCase())
+  );
+
+  const others = (data?.vendors || []).filter(
+    (v: any) => !chosen.includes(v)
+  );
 
   return createPortal(
     <div
@@ -203,133 +215,62 @@ export default function AssignPanel({
             </div>
           )}
 
-          {/* Pick a vendor */}
-          {data?.vendors && (
+          {/* The creators this customer actually asked for */}
+          {chosen.length > 0 && (
+            <div>
+              <h3 className="t-label mb-1">Who they asked for</h3>
+              <p className="t-meta mb-3" style={{ fontSize: 12 }}>
+                Picked by the client in the app
+              </p>
+
+              <div className="space-y-2">
+                {chosen.map((v: any) => (
+                  <PartnerRow
+                    key={v.id}
+                    v={v}
+                    isPicked={pickedId === v.id}
+                    onPick={() => setPickedId(pickedId === v.id ? null : v.id)}
+                    highlight
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Everyone else */}
+          {others.length > 0 && (
             <div>
               <h3 className="t-label mb-3">
-                {data.service
-                  ? `Partners who do ${data.service}`
-                  : 'Approved partners'}
+                {chosen.length > 0
+                  ? 'Or someone else'
+                  : data?.service
+                    ? `Partners who do ${data.service}`
+                    : 'Approved partners'}
               </h3>
 
-              {data.vendors.length === 0 ? (
-                <div className="card p-6 text-center">
-                  <p className="t-meta">
-                    No approved partners yet. They sign up through Lasan Hub.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {data.vendors.map((v: any) => {
-                    const isPicked = picked === v.id;
+              <div className="space-y-2">
+                {others.map((v: any) => (
+                  <PartnerRow
+                    key={v.id}
+                    v={v}
+                    isPicked={pickedId === v.id}
+                    onPick={() => setPickedId(pickedId === v.id ? null : v.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-                    return (
-                      <button
-                        key={v.id}
-                        onClick={() => setPicked(isPicked ? null : v.id)}
-                        className="w-full text-left rounded-xl p-3.5 border transition"
-                        style={{
-                          borderColor: isPicked
-                            ? 'var(--brand)'
-                            : 'var(--line)',
-                          background: isPicked
-                            ? 'rgba(95,37,159,0.06)'
-                            : 'transparent',
-                        }}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="t-title text-[14.5px]">
-                                {v.company_name || v.name}
-                              </span>
-
-                              {v.offers_this && (
-                                <span
-                                  className="text-[10px] font-semibold px-2 py-0.5 rounded"
-                                  style={{
-                                    background: 'rgba(18,179,160,0.14)',
-                                    color: '#12B3A0',
-                                  }}
-                                >
-                                  DOES THIS
-                                </span>
-                              )}
-                            </div>
-
-                            <div
-                              className="flex flex-wrap gap-x-3 text-[12px] mt-1"
-                              style={{ color: 'var(--text-faint)' }}
-                            >
-                              {v.city && <span>{v.city}</span>}
-                              <span>{v.active_jobs} active</span>
-                              {v.rated_jobs > 0 && (
-                                <span>
-                                  {v.good_jobs}/{v.rated_jobs} went well
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <a
-                            href={`tel:+91${v.phone}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="t-num text-[12.5px] font-semibold shrink-0"
-                            style={{ color: 'var(--brand)' }}
-                          >
-                            {v.phone}
-                          </a>
-                        </div>
-
-                        {[...(v.services || []), ...(v.skills || [])].length >
-                          0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2.5">
-                            {[...(v.services || []), ...(v.skills || [])]
-                              .slice(0, 5)
-                              .map((s: string) => (
-                                <span
-                                  key={s}
-                                  className="text-[11px] px-2 py-1 rounded-md"
-                                  style={{
-                                    background: 'var(--surface-hover)',
-                                    color: 'var(--text-muted)',
-                                  }}
-                                >
-                                  {s}
-                                </span>
-                              ))}
-                            {[...(v.services || []), ...(v.skills || [])]
-                              .length > 5 && (
-                              <span
-                                className="text-[11px] px-1 py-1"
-                                style={{ color: 'var(--text-faint)' }}
-                              >
-                                +
-                                {[...(v.services || []), ...(v.skills || [])]
-                                  .length - 5}
-                              </span>
-                            )}
-                          </div>
-                        )}
-
-                        {v.rate_card && isPicked && (
-                          <p
-                            className="text-[12.5px] mt-2.5 whitespace-pre-wrap"
-                            style={{ color: 'var(--text-muted)' }}
-                          >
-                            {v.rate_card}
-                          </p>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          {data?.vendors && data.vendors.length === 0 && (
+            <div className="card p-6 text-center">
+              <p className="t-meta">
+                No approved partners yet. They sign up through Lasan Hub.
+              </p>
             </div>
           )}
 
           {/* The brief, and send */}
-          {picked && (
+          {pickedId && (
             <div>
               <h3 className="t-label mb-3">What should they know?</h3>
 
@@ -364,5 +305,128 @@ export default function AssignPanel({
       </div>
     </div>,
     document.body
+  );
+}
+
+function PartnerRow({
+  v,
+  isPicked,
+  onPick,
+  highlight,
+}: {
+  v: any;
+  isPicked: boolean;
+  onPick: () => void;
+  highlight?: boolean;
+}) {
+  const tags = [...(v.services || []), ...(v.skills || [])];
+
+  const roleColour =
+    v.role === 'vendor' ? '#0EA97A' : v.role === 'freelancer' ? '#3A86FF' : '#C13584';
+
+  return (
+    <button
+      onClick={onPick}
+      className="w-full text-left rounded-xl p-3.5 border transition"
+      style={{
+        borderColor: isPicked
+          ? 'var(--brand)'
+          : highlight
+            ? `${roleColour}55`
+            : 'var(--line)',
+        background: isPicked
+          ? 'rgba(95,37,159,0.06)'
+          : highlight
+            ? `${roleColour}0A`
+            : 'transparent',
+      }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="t-title text-[14.5px]">
+              {v.company_name || v.name}
+            </span>
+
+            {v.role && (
+              <span
+                className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded"
+                style={{ background: `${roleColour}1F`, color: roleColour }}
+              >
+                {v.role}
+              </span>
+            )}
+
+            {v.offers_this && (
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded"
+                style={{
+                  background: 'rgba(18,179,160,0.14)',
+                  color: '#12B3A0',
+                }}
+              >
+                DOES THIS
+              </span>
+            )}
+          </div>
+
+          <div
+            className="flex flex-wrap gap-x-3 text-[12px] mt-1"
+            style={{ color: 'var(--text-faint)' }}
+          >
+            {v.city && <span>{v.city}</span>}
+            <span>{v.active_jobs} active</span>
+            {v.rated_jobs > 0 && (
+              <span>
+                {v.good_jobs}/{v.rated_jobs} went well
+              </span>
+            )}
+          </div>
+        </div>
+
+        <a
+          href={`tel:+91${v.phone}`}
+          onClick={(e) => e.stopPropagation()}
+          className="t-num text-[12.5px] font-semibold shrink-0"
+          style={{ color: 'var(--brand)' }}
+        >
+          {v.phone}
+        </a>
+      </div>
+
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2.5">
+          {tags.slice(0, 5).map((s: string) => (
+            <span
+              key={s}
+              className="text-[11px] px-2 py-1 rounded-md"
+              style={{
+                background: 'var(--surface-hover)',
+                color: 'var(--text-muted)',
+              }}
+            >
+              {s}
+            </span>
+          ))}
+          {tags.length > 5 && (
+            <span
+              className="text-[11px] px-1 py-1"
+              style={{ color: 'var(--text-faint)' }}
+            >
+              +{tags.length - 5}
+            </span>
+          )}
+        </div>
+      )}
+
+      {v.rate_card && isPicked && (
+        <p
+          className="text-[12.5px] mt-2.5 whitespace-pre-wrap"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {v.rate_card}
+        </p>
+      )}
+    </button>
   );
 }
