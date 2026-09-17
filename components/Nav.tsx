@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import ThemeToggle from './ThemeToggle';
 
 const LINKS = [
@@ -66,14 +67,30 @@ function Logo({ size = 16 }: { size?: number }) {
   );
 }
 
+function SignOutIcon() {
+  return (
+    <Icon>
+      <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5ZM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5Z" />
+    </Icon>
+  );
+}
+
 export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
 
+  const [signingOut, setSigningOut] = useState(false);
+
   const logout = async () => {
-    await fetch('/api/login', { method: 'DELETE' });
-    router.push('/login');
-    router.refresh();
+    setSigningOut(true);
+
+    try {
+      await fetch('/api/login', { method: 'DELETE' });
+      router.push('/login');
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
   };
 
   const isActive = (href: string) =>
@@ -94,8 +111,15 @@ export default function Nav() {
           className="px-5 py-5 border-b"
           style={{ borderColor: 'var(--line)' }}
         >
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center shadow-lg shadow-orange-500/25">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div
+              className="w-8 h-8 rounded-[10px] flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--brand-hover), var(--brand))',
+                boxShadow: '0 4px 14px -4px var(--brand)',
+              }}
+            >
               <Logo />
             </div>
             <div>
@@ -113,22 +137,25 @@ export default function Nav() {
         </div>
 
         {/* Links */}
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-0.5">
           {LINKS.map((l) => {
             const active = isActive(l.href);
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition"
+                className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-150"
                 style={{
-                  background: active ? 'var(--surface-hover)' : 'transparent',
-                  color: active ? 'var(--text)' : 'var(--text-faint)',
-                  fontWeight: active ? 600 : 400,
+                  background: active ? 'var(--brand-soft)' : 'transparent',
+                  color: active ? 'var(--brand)' : 'var(--text-faint)',
+                  fontWeight: active ? 600 : 450,
                 }}
               >
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r bg-[var(--brand)]" />
+                  <span
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r"
+                    style={{ background: 'var(--brand)' }}
+                  />
                 )}
                 <Icon>{l.icon}</Icon>
                 {l.label}
@@ -144,15 +171,21 @@ export default function Nav() {
             <ThemeToggle />
           </div>
 
+          {/* Red, and it reacts — a destructive action should look like one */}
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition hover:opacity-80"
-            style={{ color: 'var(--text-faint)' }}
+            disabled={signingOut}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 disabled:opacity-50"
+            style={{ color: 'var(--bad)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--bad-soft)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
           >
-            <Icon>
-              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5ZM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5Z" />
-            </Icon>
-            Sign out
+            <SignOutIcon />
+            {signingOut ? 'Signing out…' : 'Sign out'}
           </button>
         </div>
       </aside>
@@ -167,7 +200,13 @@ export default function Nav() {
       >
         <div className="px-4 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{
+                background:
+                  'linear-gradient(135deg, var(--brand-hover), var(--brand))',
+              }}
+            >
               <Logo size={14} />
             </div>
             <span className="text-xs font-semibold tracking-[0.16em]">
@@ -175,14 +214,17 @@ export default function Nav() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
+
             <button
               onClick={logout}
-              className="text-xs transition hover:opacity-70"
-              style={{ color: 'var(--text-faint)' }}
+              disabled={signingOut}
+              aria-label="Sign out"
+              className="w-9 h-9 rounded-lg flex items-center justify-center transition disabled:opacity-50"
+              style={{ color: 'var(--bad)', background: 'var(--bad-soft)' }}
             >
-              Sign out
+              <SignOutIcon />
             </button>
           </div>
         </div>
@@ -206,10 +248,15 @@ export default function Nav() {
               style={{ color: active ? 'var(--brand)' : 'var(--text-faint)' }}
             >
               {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-b bg-[var(--brand)]" />
+                <span
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-b"
+                  style={{ background: 'var(--brand)' }}
+                />
               )}
               <Icon>{l.icon}</Icon>
-              <span className="text-[10px] font-semibold">{l.label}</span>
+              <span className="text-[9.5px] font-semibold leading-none">
+                {l.label}
+              </span>
             </Link>
           );
         })}
