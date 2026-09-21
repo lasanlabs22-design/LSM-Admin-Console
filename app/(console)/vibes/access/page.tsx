@@ -3,18 +3,24 @@ import { adminFetch } from '@/lib/api';
 import AccessRequest from '../AccessRequest';
 import AccessHolder from '../AccessHolder';
 import AutoRefresh from '@/components/AutoRefresh';
+import LoadError from '@/components/LoadError';
+import { errorMessage } from '@/lib/meta';
+import type { AccessPerson } from '@/lib/types';
 
 export default async function VibesAccessPage() {
-  let pending: any[] = [];
-  let approved: any[] = [];
+  let pending: AccessPerson[] = [];
+  let approved: AccessPerson[] = [];
   let error: string | null = null;
 
   try {
-    const data = await adminFetch('/admin/vibes-access');
-    pending = data.pending;
-    approved = data.approved;
-  } catch (err: any) {
-    error = err.message;
+    const data = await adminFetch<{
+      pending: AccessPerson[];
+      approved: AccessPerson[];
+    }>('/admin/vibes-access');
+    pending = data.pending || [];
+    approved = data.approved || [];
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   return (
@@ -40,16 +46,7 @@ export default async function VibesAccessPage() {
         </p>
       </header>
 
-      {error && (
-        <div
-          className="card p-4"
-          style={{ borderColor: 'var(--bad-line)' }}
-        >
-          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
-            {error}
-          </p>
-        </div>
-      )}
+      {error && <LoadError message={error} />}
 
       {/* Waiting on us */}
       <div className="rise" style={{ animationDelay: '0.05s' }}>

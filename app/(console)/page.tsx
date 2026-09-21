@@ -1,34 +1,32 @@
 import Link from 'next/link';
 import { adminFetch, Stats } from '@/lib/api';
-import { STATUS_META, TYPE_META, tint } from '@/lib/meta';
+import { STATUS_META, TYPE_META, errorMessage } from '@/lib/meta';
 import DonutChart from '@/components/DonutChart';
 import AutoRefresh from '@/components/AutoRefresh';
+import LoadError from '@/components/LoadError';
+import StatCard from '@/components/StatCard';
 
 export default async function DashboardPage() {
   let stats: Stats | null = null;
   let error: string | null = null;
 
   try {
-    stats = await adminFetch('/admin/stats');
-  } catch (err: any) {
-    error = err.message;
+    stats = await adminFetch<Stats>('/admin/stats');
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   if (error || !stats) {
     return (
-      <div
-        className="card p-6 rise"
-        style={{ borderColor: 'var(--bad-line)' }}
-      >
+      <div className="space-y-6">
         <AutoRefresh />
-
-        <div className="t-title mb-1" style={{ color: 'var(--bad)' }}>
-          Could not load the dashboard
-        </div>
-        <p className="t-body">{error}</p>
-        <p className="t-meta mt-3">
-          The backend may be restarting. This page retries on its own.
-        </p>
+        <header className="rise">
+          <h1 className="t-display">Dashboard</h1>
+        </header>
+        <LoadError
+          title="Could not load the dashboard"
+          message={error || 'No data came back'}
+        />
       </div>
     );
   }
@@ -79,26 +77,26 @@ export default async function DashboardPage() {
         className="grid grid-cols-2 lg:grid-cols-4 gap-3 rise"
         style={{ animationDelay: '0.05s' }}
       >
-        <Stat
+        <StatCard
           label="Needs attention"
           value={r.new}
           accent={STATUS_META.new.color}
           href="/requests?status=new"
           urgent={r.new > 0}
         />
-        <Stat
+        <StatCard
           label="Working on"
           value={r.contacted + r.in_progress}
           accent={STATUS_META.in_progress.color}
           href="/requests?status=in_progress"
         />
-        <Stat
+        <StatCard
           label="Completed"
           value={r.closed}
           accent={STATUS_META.closed.color}
           href="/requests?status=closed"
         />
-        <Stat
+        <StatCard
           label="Users"
           value={stats.contacts.total}
           accent="var(--brand)"
@@ -206,61 +204,6 @@ export default async function DashboardPage() {
 }
 
 /* ---------------- Pieces ---------------- */
-
-function Stat({
-  label,
-  value,
-  accent,
-  href,
-  sub,
-  urgent,
-}: {
-  label: string;
-  value: number;
-  accent: string;
-  href: string;
-  sub?: string;
-  urgent?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className="card card-hover card-lift relative p-4 overflow-hidden group"
-      style={urgent ? { borderColor: tint(accent, 27) } : undefined}
-    >
-      {/* Soft corner wash in the stat's colour */}
-      <span
-        className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-[0.13] transition-opacity group-hover:opacity-20"
-        style={{ background: accent }}
-      />
-
-      <div className="relative">
-        <div className="flex items-center gap-1.5">
-          {urgent && (
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: accent }}
-            />
-          )}
-          <span className="t-label">{label}</span>
-        </div>
-
-        <div
-          className="t-num mt-2.5 leading-none"
-          style={{ fontSize: 32, fontWeight: 600, color: accent }}
-        >
-          {value}
-        </div>
-
-        {sub && (
-          <div className="t-meta mt-1.5" style={{ fontSize: 11 }}>
-            {sub}
-          </div>
-        )}
-      </div>
-    </Link>
-  );
-}
 
 function Blank({ text }: { text: string }) {
   return (

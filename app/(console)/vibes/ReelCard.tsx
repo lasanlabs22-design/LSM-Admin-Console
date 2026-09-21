@@ -3,19 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AdminReel } from './page';
-
-function timeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d`;
-  return new Date(iso).toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-  });
-}
+import { timeAgo } from '@/lib/meta';
 
 export default function ReelCard({ reel }: { reel: AdminReel }) {
   const router = useRouter();
@@ -28,7 +16,7 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
 
   const isLive = reel.status === 'live';
 
-  const patch = async (body: Record<string, any>) => {
+  const patch = async (body: Record<string, unknown>) => {
     setBusy(true);
     try {
       const res = await fetch(`/api/reels/${reel.id}`, {
@@ -86,8 +74,8 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
             letterSpacing: '0.08em',
             background:
               reel.source === 'user'
-                ? 'rgba(123,47,247,0.9)'
-                : 'rgba(255,107,53,0.9)',
+                ? 'color-mix(in srgb, var(--accent) 90%, transparent)'
+                : 'color-mix(in srgb, var(--brand) 90%, transparent)',
             color: '#fff',
           }}
         >
@@ -175,7 +163,7 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
                 className="t-num text-[10px]"
                 style={{ color: 'var(--text-faint)' }}
               >
-                {timeAgo(reel.created_at)}
+                {timeAgo(reel.created_at, { short: true })}
               </span>
 
               <div className="flex gap-1">

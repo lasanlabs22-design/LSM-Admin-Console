@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import type { AccessPerson } from '@/lib/types';
 
-export default function AccessHolder({ person }: { person: any }) {
+export default function AccessHolder({ person }: { person: AccessPerson }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 

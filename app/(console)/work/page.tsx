@@ -1,39 +1,10 @@
 import Link from 'next/link';
 import { adminFetch } from '@/lib/api';
 import AutoRefresh from '@/components/AutoRefresh';
-import { tint } from '@/lib/meta';
-
-const STATUS: Record<string, { label: string; colour: string; note: string }> =
-  {
-    offered: {
-      label: 'Waiting on them',
-      colour: 'var(--warn)',
-      note: "Sent — they haven't answered yet",
-    },
-    accepted: {
-      label: 'Accepted',
-      colour: 'var(--good)',
-      note: "They've taken it on but not started",
-    },
-    in_progress: {
-      label: 'In progress',
-      colour: 'var(--brand)',
-      note: 'Work is underway',
-    },
-    completed: {
-      label: 'Completed',
-      colour: 'var(--good)',
-      note: "They say it's done",
-    },
-  };
-
-function timeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
+import LoadError from '@/components/LoadError';
+import StatCard from '@/components/StatCard';
+import { WORK_STATUS, errorMessage, roleMeta, timeAgo } from '@/lib/meta';
+import type { WorkItem, WorkStats } from '@/lib/types';
 
 export default async function WorkPage({
   searchParams,
@@ -43,18 +14,18 @@ export default async function WorkPage({
   const params = await searchParams;
   const filter = params.status;
 
-  let work: any[] = [];
-  let stats: any = null;
+  let work: WorkItem[] = [];
+  let stats: WorkStats | null = null;
   let error: string | null = null;
 
   try {
-    const data = await adminFetch(
+    const data = await adminFetch<{ work: WorkItem[]; stats: WorkStats }>(
       `/admin/work${filter ? `?status=${encodeURIComponent(filter)}` : ''}`
     );
-    work = data.work;
+    work = data.work || [];
     stats = data.stats;
-  } catch (err: any) {
-    error = err.message;
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   return (
@@ -74,26 +45,26 @@ export default async function WorkPage({
           className="grid grid-cols-2 lg:grid-cols-4 gap-3 rise"
           style={{ animationDelay: '0.05s' }}
         >
-          <Stat
+          <StatCard
             label="Awaiting reply"
             value={stats.offered}
             accent="var(--warn)"
             urgent={stats.offered > 0}
             href="/work?status=offered"
           />
-          <Stat
+          <StatCard
             label="Accepted"
             value={stats.accepted}
             accent="var(--good)"
             href="/work?status=accepted"
           />
-          <Stat
+          <StatCard
             label="In progress"
             value={stats.in_progress}
             accent="var(--brand)"
             href="/work?status=in_progress"
           />
-          <Stat
+          <StatCard
             label="Completed"
             value={stats.completed}
             accent="var(--neutral)"
@@ -112,16 +83,7 @@ export default async function WorkPage({
         </Link>
       )}
 
-      {error && (
-        <div
-          className="card p-4"
-          style={{ borderColor: 'var(--bad-line)' }}
-        >
-          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
-            {error}
-          </p>
-        </div>
-      )}
+      {error && <LoadError message={error} />}
 
       {!error && work.length === 0 && (
         <div className="card p-12 text-center">
@@ -134,7 +96,7 @@ export default async function WorkPage({
 
       <div className="space-y-2.5">
         {work.map((w, i) => {
-          const s = STATUS[w.status] || STATUS.offered;
+          const s = WORK_STATUS[w.status] || WORK_STATUS.offered;
 
           return (
             <div
@@ -143,9 +105,7 @@ export default async function WorkPage({
               style={{
                 animationDelay: `${0.04 * Math.min(i, 8)}s`,
                 borderColor:
-                  w.status === 'offered'
-                    ? 'var(--warn-line)'
-                    : 'var(--line)',
+                  w.status === 'offered' ? 'var(--warn-line)' : 'var(--line)',
               }}
             >
               {/* What the job is */}
@@ -202,8 +162,7 @@ export default async function WorkPage({
                   <div
                     className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center font-semibold text-white text-[12px]"
                     style={{
-                      background:
-                        w.partner_role === 'vendor' ? 'var(--role-vendor)' : 'var(--info)',
+                      background: roleMeta(w.partner_role).color,
                     }}
                   >
                     {w.partner_name.charAt(0).toUpperCase()}
@@ -242,49 +201,5 @@ export default async function WorkPage({
         })}
       </div>
     </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-  urgent,
-  href,
-}: {
-  label: string;
-  value: number;
-  accent: string;
-  urgent?: boolean;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="card card-hover p-4 relative overflow-hidden block"
-      style={urgent ? { borderColor: tint(accent, 33) } : undefined}
-    >
-      <span
-        className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-[0.13]"
-        style={{ background: accent }}
-      />
-      <div className="relative">
-        <div className="flex items-center gap-1.5">
-          {urgent && (
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: accent }}
-            />
-          )}
-          <span className="t-label">{label}</span>
-        </div>
-        <div
-          className="t-num mt-2.5 leading-none"
-          style={{ fontSize: 30, fontWeight: 600, color: accent }}
-        >
-          {value}
-        </div>
-      </div>
-    </Link>
   );
 }

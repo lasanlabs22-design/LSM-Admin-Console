@@ -2,6 +2,14 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { errorMessage } from '@/lib/meta';
+
+/** The parts of Cloudinary's upload reply we use */
+type CloudinaryUpload = {
+  secure_url: string;
+  public_id: string;
+  duration?: number;
+};
 
 const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -62,38 +70,40 @@ export default function ReelUploader() {
       form.append('file', file);
       form.append('upload_preset', PRESET as string);
 
-      const cloudinary = await new Promise<any>((resolve, reject) => {
-        // XMLHttpRequest, not fetch — it's the only way to get
-        // real upload progress, and a 60MB video needs a progress bar
-        const xhr = new XMLHttpRequest();
+      const cloudinary = await new Promise<CloudinaryUpload>(
+        (resolve, reject) => {
+          // XMLHttpRequest, not fetch — it's the only way to get
+          // real upload progress, and a 60MB video needs a progress bar
+          const xhr = new XMLHttpRequest();
 
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            // e.loaded can exceed e.total because of multipart overhead,
-            // so clamp it. We stop at 99% — the last step is Cloudinary
-            // transcoding, which finishes when onload fires.
-            setProgress(Math.min(99, Math.round((e.loaded / e.total) * 100)));
-          }
-        };
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              // e.loaded can exceed e.total because of multipart overhead,
+              // so clamp it. We stop at 99% — the last step is Cloudinary
+              // transcoding, which finishes when onload fires.
+              setProgress(Math.min(99, Math.round((e.loaded / e.total) * 100)));
+            }
+          };
 
-        xhr.onload = () => {
-          setProgress(100);
+          xhr.onload = () => {
+            setProgress(100);
 
-          if (xhr.status === 200) {
-            resolve(JSON.parse(xhr.responseText));
-          } else {
-            reject(new Error('Upload failed'));
-          }
-        };
+            if (xhr.status === 200) {
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              reject(new Error('Upload failed'));
+            }
+          };
 
-        xhr.onerror = () => reject(new Error('Upload failed'));
+          xhr.onerror = () => reject(new Error('Upload failed'));
 
-        xhr.open(
-          'POST',
-          `https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`
-        );
-        xhr.send(form);
-      });
+          xhr.open(
+            'POST',
+            `https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`
+          );
+          xhr.send(form);
+        }
+      );
 
       /* ---- 2. Tell our backend about it ---- */
       // Cloudinary can generate a thumbnail by swapping the extension
@@ -119,8 +129,8 @@ export default function ReelUploader() {
 
       reset();
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err) {
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -248,8 +258,7 @@ export default function ReelUploader() {
                   className="h-full rounded-full transition-all duration-200"
                   style={{
                     width: `${progress}%`,
-                    background:
-                      'var(--brand-gradient)',
+                    background: 'var(--brand-gradient)',
                   }}
                 />
               </div>

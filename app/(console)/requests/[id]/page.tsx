@@ -1,6 +1,13 @@
 import Link from 'next/link';
 import { adminFetch, AdminRequest } from '@/lib/api';
-import { TYPE_META, formatDateTime, timeAgo, tint } from '@/lib/meta';
+import {
+  TYPE_META,
+  errorMessage,
+  formatDateTime,
+  timeAgo,
+  tint,
+} from '@/lib/meta';
+import LoadError from '@/components/LoadError';
 import Actions from './Actions';
 
 export default async function RequestDetailPage({
@@ -16,25 +23,30 @@ export default async function RequestDetailPage({
 
   try {
     const [reqData, assigneeData] = await Promise.all([
-      adminFetch(`/admin/requests/${encodeURIComponent(id)}`),
-      adminFetch('/admin/assignees').catch(() => ({ assignees: [] })),
+      adminFetch<{ request: AdminRequest }>(
+        `/admin/requests/${encodeURIComponent(id)}`
+      ),
+      // A missing name list shouldn't stop the request from showing
+      adminFetch<{ assignees: string[] }>('/admin/assignees').catch(() => ({
+        assignees: [] as string[],
+      })),
     ]);
     request = reqData.request;
     assignees = assigneeData.assignees || [];
-  } catch (err: any) {
-    error = err.message;
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   if (error || !request) {
     return (
-      <div className="card p-6" style={{ borderColor: 'var(--bad-line)' }}>
-        <div className="t-title mb-1" style={{ color: 'var(--bad)' }}>
-          Could not load this request
-        </div>
-        <p className="t-body">{error}</p>
+      <div className="space-y-4">
+        <LoadError
+          title="Could not load this request"
+          message={error || 'It may have been deleted.'}
+        />
         <Link
           href="/requests"
-          className="inline-block mt-4 text-[13px] font-semibold"
+          className="inline-block text-[13px] font-semibold"
           style={{ color: 'var(--brand)' }}
         >
           ← Back to requests

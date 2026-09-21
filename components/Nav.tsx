@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import ThemeToggle from './ThemeToggle';
+import Dialog from './Dialog';
 
 const LINKS = [
   {
@@ -49,6 +50,18 @@ const LINKS = [
     ),
   },
 ];
+
+/* On phones, these four sit on the tab bar and the rest go under "More" */
+const PRIMARY_HREFS = ['/', '/requests', '/work', '/influencers'];
+const PRIMARY = LINKS.filter((l) => PRIMARY_HREFS.includes(l.href));
+
+const HINTS: Record<string, string> = {
+  '/vibes': 'Reels, uploads and posting access',
+  '/contacts': 'Everyone registered on Lasan Mart',
+};
+const SECONDARY = LINKS.filter((l) => !PRIMARY_HREFS.includes(l.href)).map(
+  (l) => ({ ...l, hint: HINTS[l.href] || '' })
+);
 
 function Icon({ children }: { children: React.ReactNode }) {
   return (
@@ -96,6 +109,10 @@ export default function Nav() {
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
+  // Phones get four tabs and a "More" sheet; six labels don't fit
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreActive = SECONDARY.some((l) => isActive(l.href));
+
   return (
     <>
       {/* ---------- Desktop sidebar ---------- */}
@@ -115,8 +132,7 @@ export default function Nav() {
             <div
               className="w-8 h-8 rounded-[10px] flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
               style={{
-                background:
-                  'var(--brand-gradient)',
+                background: 'var(--brand-gradient)',
                 boxShadow: '0 4px 14px -4px var(--brand)',
               }}
             >
@@ -204,8 +220,7 @@ export default function Nav() {
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center"
               style={{
-                background:
-                  'var(--brand-gradient)',
+                background: 'var(--brand-gradient)',
               }}
             >
               <Logo size={14} />
@@ -239,29 +254,142 @@ export default function Nav() {
           background: 'color-mix(in srgb, var(--bg) 92%, transparent)',
         }}
       >
-        {LINKS.map((l) => {
-          const active = isActive(l.href);
-          return (
-            <Link
-              key={l.href}
-              href={l.href}
-              aria-current={active ? 'page' : undefined}
-              className="relative flex-1 min-w-0 flex flex-col items-center gap-1 pt-2 pb-2.5 transition"
-              style={{ color: active ? 'var(--brand)' : 'var(--text-faint)' }}
-            >
-              <span
-                className="flex items-center justify-center w-11 h-7 rounded-full transition-colors"
-                style={{ background: active ? 'var(--brand-soft)' : 'transparent' }}
-              >
-                <Icon>{l.icon}</Icon>
-              </span>
-              <span className="text-[10px] font-semibold leading-none truncate max-w-full">
-                {l.label}
-              </span>
-            </Link>
-          );
-        })}
+        {PRIMARY.map((l) => (
+          <TabItem
+            key={l.href}
+            href={l.href}
+            label={l.label}
+            icon={l.icon}
+            active={isActive(l.href)}
+          />
+        ))}
+
+        <TabItem
+          label="More"
+          icon={MORE_ICON}
+          active={moreActive || moreOpen}
+          onClick={() => setMoreOpen(true)}
+        />
       </nav>
+
+      {/* The sections that don't fit on the bar */}
+      {moreOpen && (
+        <Dialog
+          label="More sections"
+          size="panel"
+          onClose={() => setMoreOpen(false)}
+        >
+          <div className="p-5 pb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="t-label">More</h2>
+              <button
+                onClick={() => setMoreOpen(false)}
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: 'var(--surface-hover)' }}
+                aria-label="Close"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4Z" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              {SECONDARY.map((l) => {
+                const active = isActive(l.href);
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setMoreOpen(false)}
+                    aria-current={active ? 'page' : undefined}
+                    className="flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-colors"
+                    style={{
+                      background: active
+                        ? 'var(--brand-soft)'
+                        : 'var(--surface-hover)',
+                      color: active ? 'var(--brand)' : 'var(--text)',
+                    }}
+                  >
+                    <Icon>{l.icon}</Icon>
+                    <span className="flex-1">
+                      <span className="block text-[14.5px] font-semibold">
+                        {l.label}
+                      </span>
+                      <span
+                        className="block text-[12px] mt-0.5"
+                        style={{ color: 'var(--text-faint)' }}
+                      >
+                        {l.hint}
+                      </span>
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </Dialog>
+      )}
     </>
+  );
+}
+
+const MORE_ICON = (
+  <path d="M6 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+);
+
+/** One slot on the phone tab bar — a link, or a button for "More" */
+function TabItem({
+  href,
+  label,
+  icon,
+  active,
+  onClick,
+}: {
+  href?: string;
+  label: string;
+  icon: React.ReactNode;
+  active: boolean;
+  onClick?: () => void;
+}) {
+  const className =
+    'relative flex-1 min-w-0 flex flex-col items-center gap-1 pt-2 pb-2.5 transition';
+  const style = { color: active ? 'var(--brand)' : 'var(--text-faint)' };
+
+  const inner = (
+    <>
+      <span
+        className="flex items-center justify-center w-12 h-7 rounded-full transition-colors"
+        style={{ background: active ? 'var(--brand-soft)' : 'transparent' }}
+      >
+        <Icon>{icon}</Icon>
+      </span>
+      <span className="text-[10.5px] font-semibold leading-none truncate max-w-full">
+        {label}
+      </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        aria-current={active ? 'page' : undefined}
+        className={className}
+        style={style}
+      >
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <button onClick={onClick} className={className} style={style}>
+      {inner}
+    </button>
   );
 }

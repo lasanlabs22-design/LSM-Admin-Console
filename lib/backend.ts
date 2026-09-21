@@ -8,11 +8,23 @@ import { SESSION_COOKIE, backendKey, verifySessionToken } from './session';
  * API_URL has no NEXT_PUBLIC_ prefix, which means it's read at runtime
  * rather than baked in when the site is built — so changing it in Vercel
  * takes effect on the next request, with no redeploy.
+ *
+ * Only local development falls back to localhost. In production a missing
+ * setting is an error, so a misconfigured deploy says so instead of
+ * quietly calling a server that isn't there.
  */
-export const API_URL =
-  process.env.API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:3000';
+export function apiUrl(): string {
+  const url = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  if (url) return url.replace(/\/+$/, '');
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'API_URL is not set. Add it in the Vercel project settings and redeploy.'
+    );
+  }
+
+  return 'http://localhost:3000';
+}
 
 export async function isSignedIn() {
   const store = await cookies();
@@ -52,14 +64,19 @@ export async function forward(path: string, options: ForwardOptions = {}) {
     try {
       body = JSON.stringify(await options.withBody.json());
     } catch {
-      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      );
     }
   }
 
   let res: Response;
+  let base = '';
 
   try {
-    res = await fetch(`${API_URL}${path}`, {
+    base = apiUrl();
+    res = await fetch(`${base}${path}`, {
       method: options.method || 'GET',
       headers: {
         ...(body ? { 'Content-Type': 'application/json' } : {}),
@@ -68,7 +85,11 @@ export async function forward(path: string, options: ForwardOptions = {}) {
       body,
       cache: 'no-store',
     });
-  } catch {
+  } catch (err) {
+    console.error(
+      `Could not reach the API at ${base || '(API_URL not set)'}${path}:`,
+      err instanceof Error ? err.message : err
+    );
     return NextResponse.json(
       { error: 'Could not reach the backend' },
       { status: 502 }

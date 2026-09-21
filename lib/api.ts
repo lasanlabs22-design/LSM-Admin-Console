@@ -1,33 +1,46 @@
-import { API_URL, isSignedIn } from './backend';
+import { apiUrl, isSignedIn } from './backend';
 import { backendKey } from './session';
+import { errorMessage } from './meta';
+
+export type { Stats, AdminRequest, AdminContact } from './types';
 
 /**
  * Calls the Lasan Mart backend with the admin key attached.
  * Runs on the server only — the key never reaches the browser.
+ *
+ * T is what the caller expects back. It isn't checked at runtime, so
+ * callers should still treat missing fields as possible.
  */
-export async function adminFetch(path: string, options: RequestInit = {}) {
+export async function adminFetch<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
   // The proxy already guards pages; this keeps the key safe if it's ever
   // bypassed or misconfigured
   if (!(await isSignedIn())) throw new Error('Not signed in');
 
-  const key = backendKey();
-
+  const base = apiUrl();
   let res: Response;
 
   try {
-    res = await fetch(`${API_URL}${path}`, {
+    res = await fetch(`${base}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-key': key,
+        'x-admin-key': backendKey(),
         ...(options.headers || {}),
       },
       // Always fetch fresh — a dashboard showing stale leads is useless
       cache: 'no-store',
     });
-  } catch (err: any) {
-    // Naming the URL makes a misconfigured environment obvious
-    throw new Error(`Could not reach the API at ${API_URL} — ${err?.message}`);
+  } catch (err) {
+    // The address goes to the server logs, where it helps; the screen
+    // only needs to know the backend didn't answer
+    console.error(
+      `Could not reach the API at ${base}${path}:`,
+      errorMessage(err)
+    );
+    throw new Error('Could not reach the backend. It may be restarting.');
   }
 
   if (!res.ok) {
@@ -35,60 +48,5 @@ export async function adminFetch(path: string, options: RequestInit = {}) {
     throw new Error(body.error || `Request failed (${res.status})`);
   }
 
-  return res.json();
+  return res.json() as Promise<T>;
 }
-
-/* ---------- Types, matching what the backend returns ---------- */
-
-export type Stats = {
-  requests: {
-    total: number;
-    new: number;
-    contacted: number;
-    in_progress: number;
-    closed: number;
-    this_week: number;
-  };
-  contacts: { total: number; this_week: number };
-  byType: { type: string; count: number }[];
-  workload: { assigned_to: string; count: number }[];
-};
-
-export type AdminRequest = {
-  id: string;
-  type: string;
-  title: string | null;
-  description: string | null;
-  details: Record<string, any> | null;
-  status: string;
-  assigned_to: string | null;
-  assigned_at: string | null;
-  internal_note: string | null;
-  email_sent: boolean;
-  created_at: string;
-  updated_at?: string;
-  contact_id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  company_name: string | null;
-  company_description?: string | null;
-  sector: string | null;
-  city: string | null;
-  contact_since?: string;
-};
-
-export type AdminContact = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  company_name: string | null;
-  sector: string | null;
-  city: string | null;
-  created_at: string;
-  request_count: number;
-  last_request_at: string | null;
-  photo_url: string | null;
-  logo_url: string | null;
-};

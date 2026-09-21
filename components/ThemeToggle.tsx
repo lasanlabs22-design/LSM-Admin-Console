@@ -1,24 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
+
+type Theme = 'dark' | 'light';
+
+/* The class on <html> is the source of truth — the inline script in the
+   root layout sets it before paint. Reading it directly keeps every toggle
+   on the page in step (there's one in the sidebar and one in the phone
+   header). */
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+  return () => observer.disconnect();
+}
+
+const readTheme = (): Theme =>
+  document.documentElement.classList.contains('light') ? 'light' : 'dark';
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-
-  // Read whatever the inline script already applied
-  useEffect(() => {
-    const current = document.documentElement.classList.contains('light')
-      ? 'light'
-      : 'dark';
-    setTheme(current);
-  }, []);
+  const theme = useSyncExternalStore(
+    subscribe,
+    readTheme,
+    () => 'dark' as Theme
+  );
 
   const toggle = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.classList.remove(theme);
     document.documentElement.classList.add(next);
-    localStorage.setItem('lsm-theme', next);
-    setTheme(next);
+    try {
+      localStorage.setItem('lsm-theme', next);
+    } catch {
+      // Private mode — the theme still changes, it just won't be remembered
+    }
   };
 
   return (

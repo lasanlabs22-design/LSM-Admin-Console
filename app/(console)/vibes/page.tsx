@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { adminFetch } from '@/lib/api';
 import ReelUploader from '@/components/ReelUploader';
 import ReelCard from './ReelCard';
+import LoadError from '@/components/LoadError';
+import StatCard from '@/components/StatCard';
+import { errorMessage } from '@/lib/meta';
 
 export type AdminReel = {
   id: string;
@@ -34,11 +37,13 @@ export default async function VibesPage() {
   let error: string | null = null;
 
   try {
-    const data = await adminFetch('/admin/reels');
-    reels = data.reels;
+    const data = await adminFetch<{ reels: AdminReel[]; stats: ReelStats }>(
+      '/admin/reels'
+    );
+    reels = data.reels || [];
     stats = data.stats;
-  } catch (err: any) {
-    error = err.message;
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   return (
@@ -68,10 +73,18 @@ export default async function VibesPage() {
           className="grid grid-cols-2 lg:grid-cols-4 gap-3 rise"
           style={{ animationDelay: '0.05s' }}
         >
-          <Stat label="Live" value={stats.live} accent="var(--good)" />
-          <Stat label="Hidden" value={stats.hidden} accent="var(--neutral)" />
-          <Stat label="From users" value={stats.from_users} accent="var(--accent)" />
-          <Stat
+          <StatCard label="Live" value={stats.live} accent="var(--good)" />
+          <StatCard
+            label="Hidden"
+            value={stats.hidden}
+            accent="var(--neutral)"
+          />
+          <StatCard
+            label="From users"
+            value={stats.from_users}
+            accent="var(--accent)"
+          />
+          <StatCard
             label="Total views"
             value={stats.total_views}
             accent="var(--brand)"
@@ -84,16 +97,7 @@ export default async function VibesPage() {
         <ReelUploader />
       </div>
 
-      {error && (
-        <div
-          className="card p-4"
-          style={{ borderColor: 'var(--bad-line)' }}
-        >
-          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
-            {error}
-          </p>
-        </div>
-      )}
+      {error && <LoadError message={error} />}
 
       {/* The reels */}
       <section className="rise" style={{ animationDelay: '0.15s' }}>
@@ -123,34 +127,6 @@ export default async function VibesPage() {
           </div>
         )}
       </section>
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent: string;
-}) {
-  return (
-    <div className="card p-4 relative overflow-hidden">
-      <span
-        className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-[0.13]"
-        style={{ background: accent }}
-      />
-      <div className="relative">
-        <span className="t-label">{label}</span>
-        <div
-          className="t-num mt-2.5 leading-none"
-          style={{ fontSize: 30, fontWeight: 600, color: accent }}
-        >
-          {value}
-        </div>
-      </div>
     </div>
   );
 }
