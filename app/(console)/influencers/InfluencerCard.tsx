@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import type { AdminInfluencer } from './page';
 import PartnerDetail from './PartnerDetail';
+import { instagramUrl, safeExternalUrl, tint } from '@/lib/meta';
 
 const STATUS_META: Record<
   string,
@@ -13,25 +14,25 @@ const STATUS_META: Record<
   pending: {
     label: 'Waiting',
     color: 'var(--warn)',
-    bg: 'rgba(232,174,0,0.12)',
+    bg: 'var(--warn-soft)',
   },
   approved: {
     label: 'Approved',
     color: 'var(--good)',
-    bg: 'rgba(18,179,160,0.12)',
+    bg: 'var(--good-soft)',
   },
-  paused: { label: 'Paused', color: '#3A86FF', bg: 'rgba(58,134,255,0.12)' },
+  paused: { label: 'Paused', color: 'var(--info)', bg: 'var(--info-soft)' },
   rejected: {
     label: 'Rejected',
-    color: '#8A8F98',
-    bg: 'rgba(138,143,152,0.12)',
+    color: 'var(--neutral)',
+    bg: 'var(--neutral-soft)',
   },
 };
 
 const ROLE_META: Record<string, { label: string; color: string }> = {
-  influencer: { label: 'Creator', color: '#C13584' },
-  vendor: { label: 'Vendor', color: '#0EA97A' },
-  freelancer: { label: 'Freelancer', color: '#3A86FF' },
+  influencer: { label: 'Creator', color: 'var(--role-creator)' },
+  vendor: { label: 'Vendor', color: 'var(--role-vendor)' },
+  freelancer: { label: 'Freelancer', color: 'var(--info)' },
 };
 
 function timeAgo(iso: string): string {
@@ -65,6 +66,7 @@ export default function InfluencerCard({
   const status = STATUS_META[p.status] || STATUS_META.pending;
   const role = ROLE_META[p.role] || ROLE_META.influencer;
   const isPending = p.status === 'pending';
+  const portfolio = safeExternalUrl(p.portfolio_url);
 
   const patch = async (body: Record<string, any>) => {
     setBusy(true);
@@ -105,7 +107,7 @@ export default function InfluencerCard({
         className="card p-4 rise relative"
         style={{
           animationDelay: `${0.04 * Math.min(index, 8)}s`,
-          borderColor: isPending ? 'rgba(232,174,0,0.35)' : 'var(--line)',
+          borderColor: isPending ? 'var(--warn-line)' : 'var(--line)',
         }}
       >
         <div
@@ -145,11 +147,12 @@ export default function InfluencerCard({
                   </div>
                 ) : p.instagram_id ? (
                   <a
-                    href={`https://instagram.com/${p.instagram_id}`}
+                    href={instagramUrl(p.instagram_id)}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     className="text-[12.5px] font-medium"
-                    style={{ color: '#C13584' }}
+                    style={{ color: 'var(--role-creator)' }}
                   >
                     @{p.instagram_id} ↗
                   </a>
@@ -171,7 +174,7 @@ export default function InfluencerCard({
                   className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded"
                   style={{
                     color: role.color,
-                    background: `${role.color}1A`,
+                    background: tint(role.color, 10),
                     letterSpacing: '0.05em',
                   }}
                 >
@@ -194,11 +197,12 @@ export default function InfluencerCard({
               {p.category && <span>{p.category}</span>}
               {p.city && <span>{p.city}</span>}
               {p.followers && <span>{p.followers} followers</span>}
-              {p.portfolio_url && (
+              {portfolio && (
                 <a
-                  href={p.portfolio_url}
+                  href={portfolio}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                   style={{ color: 'var(--brand)' }}
                 >
                   Portfolio ↗

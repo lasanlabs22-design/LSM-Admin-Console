@@ -2,18 +2,19 @@
 
 import { createPortal } from 'react-dom';
 import type { AdminInfluencer } from './page';
+import { instagramUrl, safeExternalUrl, tint } from '@/lib/meta';
 
 const ROLE_META: Record<string, { label: string; color: string }> = {
-  influencer: { label: 'Creator', color: '#C13584' },
-  vendor: { label: 'Vendor', color: '#0EA97A' },
-  freelancer: { label: 'Freelancer', color: '#3A86FF' },
+  influencer: { label: 'Creator', color: 'var(--role-creator)' },
+  vendor: { label: 'Vendor', color: 'var(--role-vendor)' },
+  freelancer: { label: 'Freelancer', color: 'var(--info)' },
 };
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   pending: { label: 'Waiting for review', color: 'var(--warn)' },
   approved: { label: 'Approved', color: 'var(--good)' },
-  paused: { label: 'Paused', color: '#3A86FF' },
-  rejected: { label: 'Rejected', color: '#8A8F98' },
+  paused: { label: 'Paused', color: 'var(--info)' },
+  rejected: { label: 'Rejected', color: 'var(--neutral)' },
 };
 
 function formatDate(iso: string) {
@@ -35,6 +36,7 @@ export default function PartnerDetail({
 }) {
   const role = ROLE_META[p.role] || ROLE_META.influencer;
   const status = STATUS_META[p.status] || STATUS_META.pending;
+  const portfolio = safeExternalUrl(p.portfolio_url);
 
   const tags = [
     ...(p.services || []),
@@ -49,14 +51,14 @@ export default function PartnerDetail({
       onClick={onClose}
     >
       <div
-        className="card w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
+        className="card w-full sm:max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
           className="p-6 pb-5 relative overflow-hidden"
           style={{
-            background: `linear-gradient(135deg, ${role.color}22, transparent)`,
+            background: `linear-gradient(135deg, ${tint(role.color, 13)}, transparent)`,
           }}
         >
           <button
@@ -94,7 +96,7 @@ export default function PartnerDetail({
                   className="text-[10px] font-semibold uppercase px-2 py-1 rounded"
                   style={{
                     color: role.color,
-                    background: `${role.color}1F`,
+                    background: tint(role.color, 12),
                     letterSpacing: '0.06em',
                   }}
                 >
@@ -158,10 +160,10 @@ export default function PartnerDetail({
               {p.instagram_id && (
                 <Row label="Instagram">
                   <a
-                    href={`https://instagram.com/${p.instagram_id}`}
+                    href={instagramUrl(p.instagram_id)}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ color: '#C13584' }}
+                    style={{ color: 'var(--role-creator)' }}
                   >
                     @{p.instagram_id} ↗
                   </a>
@@ -193,23 +195,28 @@ export default function PartnerDetail({
           {p.role === 'freelancer' && p.portfolio_url && (
             <Section title="Their work">
               <Row label="Portfolio">
-                <a
-                  href={p.portfolio_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="break-all"
-                  style={{ color: 'var(--brand)' }}
-                >
-                  {p.portfolio_url} ↗
-                </a>
+                {portfolio ? (
+                  <a
+                    href={portfolio}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="break-all"
+                    style={{ color: 'var(--brand)' }}
+                  >
+                    {p.portfolio_url} ↗
+                  </a>
+                ) : (
+                  /* Not a web link — show it, but don't make it clickable */
+                  <span className="break-all">{p.portfolio_url}</span>
+                )}
               </Row>
               {p.instagram_id && (
                 <Row label="Instagram">
                   <a
-                    href={`https://instagram.com/${p.instagram_id}`}
+                    href={instagramUrl(p.instagram_id)}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ color: '#C13584' }}
+                    style={{ color: 'var(--role-creator)' }}
                   >
                     @{p.instagram_id} ↗
                   </a>
@@ -229,7 +236,7 @@ export default function PartnerDetail({
                     key={t}
                     className="text-[12.5px] px-3 py-1.5 rounded-lg"
                     style={{
-                      background: `${role.color}14`,
+                      background: tint(role.color, 8),
                       color: 'var(--text)',
                     }}
                   >

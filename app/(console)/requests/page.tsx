@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { adminFetch, AdminRequest } from '@/lib/api';
-import { STATUS_META, TYPE_META, timeAgo } from '@/lib/meta';
+import { STATUS_META, TYPE_META, pageWindow, timeAgo, tint } from '@/lib/meta';
 import Filters from './Filters';
 import AutoRefresh from '@/components/AutoRefresh';
 
@@ -87,7 +87,7 @@ export default async function RequestsPage({
       {error && (
         <div
           className="card p-4"
-          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+          style={{ borderColor: 'var(--bad-line)' }}
         >
           <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
@@ -141,8 +141,19 @@ export default async function RequestsPage({
 
       {/* Paging */}
       {data && data.pages > 1 && (
-        <div className="flex items-center justify-center gap-1.5 pt-3">
-          {Array.from({ length: data.pages }, (_, i) => i + 1).map((p) => {
+        <nav
+          aria-label="Pages"
+          className="flex flex-wrap items-center justify-center gap-1.5 pt-3"
+        >
+          {pageWindow(data.page, data.pages).map((p, i) => {
+            if (p === null) {
+              return (
+                <span key={`gap-${i}`} className="t-meta px-1">
+                  …
+                </span>
+              );
+            }
+
             const q = new URLSearchParams(query);
             q.set('page', String(p));
             const isCurrent = p === data.page;
@@ -151,6 +162,7 @@ export default async function RequestsPage({
               <Link
                 key={p}
                 href={`/requests?${q.toString()}`}
+                aria-current={isCurrent ? 'page' : undefined}
                 className="w-9 h-9 rounded-lg flex items-center justify-center t-num text-[13px] font-semibold transition"
                 style={
                   isCurrent
@@ -166,7 +178,7 @@ export default async function RequestsPage({
               </Link>
             );
           })}
-        </div>
+        </nav>
       )}
     </div>
   );
@@ -176,7 +188,7 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
   const status = STATUS_META[r.status] || STATUS_META.new;
   const type = TYPE_META[r.type] || {
     label: r.type,
-    color: '#8A8F98',
+    color: 'var(--neutral)',
     emoji: '📄',
   };
 
@@ -193,7 +205,7 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
       className="card card-hover card-lift block p-4 relative overflow-hidden"
       style={{
         opacity: isClosed ? 0.62 : 1,
-        borderColor: isNew ? `${status.color}33` : 'var(--line)',
+        borderColor: isNew ? tint(status.color, 20) : 'var(--line)',
       }}
     >
       {/* Left edge stripe in the type's colour */}
@@ -204,12 +216,12 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
 
       <div className="pl-2">
         <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
             <span
               className="text-[10px] font-semibold uppercase px-2 py-1 rounded-md"
               style={{
                 color: type.color,
-                background: `${type.color}18`,
+                background: tint(type.color, 9),
                 letterSpacing: '0.06em',
               }}
             >
@@ -233,8 +245,8 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
               <span
                 className="text-[10.5px] font-medium px-2 py-1 rounded-md"
                 style={{
-                  color: '#0EA97A',
-                  background: 'rgba(14,169,122,0.12)',
+                  color: 'var(--role-vendor)',
+                  background: 'var(--good-soft)',
                 }}
               >
                 → {partner.company_name || partner.partner_name}
@@ -258,7 +270,7 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
           </span>
         </div>
 
-        <h3 className="t-title">{r.title || r.name}</h3>
+        <h3 className="t-title break-words">{r.title || r.name}</h3>
 
         {r.description && (
           <p
@@ -270,15 +282,22 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
         )}
 
         <div
-          className="flex items-center gap-3 mt-3 pt-3 text-[12px] border-t"
+          className="flex items-center gap-x-3 gap-y-1 mt-3 pt-3 text-[12px] border-t min-w-0"
           style={{ borderColor: 'var(--line)', color: 'var(--text-faint)' }}
         >
-          <span className="font-medium" style={{ color: 'var(--text-muted)' }}>
+          <span
+            className="font-medium truncate min-w-0"
+            style={{ color: 'var(--text-muted)' }}
+          >
             {r.name}
           </span>
-          <span className="t-num">{r.phone}</span>
+          <span className="t-num shrink-0 hidden min-[380px]:inline">
+            {r.phone}
+          </span>
           {r.company_name && (
-            <span className="hidden sm:inline truncate">{r.company_name}</span>
+            <span className="hidden sm:inline truncate min-w-0">
+              {r.company_name}
+            </span>
           )}
           <span className="ml-auto shrink-0">{timeAgo(r.created_at)}</span>
         </div>

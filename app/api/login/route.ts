@@ -1,27 +1,90 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import {
+  LEGACY_COOKIE,
+  SESSION_COOKIE,
+  SESSION_MAX_AGE,
+  checkPassword,
+  createSessionToken,
+} from '@/lib/session';
 
 /**
- * Checks the password on the SERVER, so the real password never
- * reaches the browser. On success we set a cookie that every
- * later request carries automatically.
+ * Slows down password guessing: a handful of tries per IP, then a lockout.
+ *
+ * This lives in memory, so on serverless it's per instance — a speed bump,
+ * not a wall. A long random ADMIN_PASSWORD is still the real defence.
+ */
+const WINDOW_MS = 15 * 60 * 1000;
+const MAX_FAILURES = 5;
+const failures = new Map<string, { count: number; first: number }>();
+
+function clientIp(request: Request) {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  );
+}
+
+function isLockedOut(ip: string) {
+  const entry = failures.get(ip);
+  if (!entry) return false;
+
+  if (Date.now() - entry.first > WINDOW_MS) {
+    failures.delete(ip);
+    return false;
+  }
+
+  return entry.count >= MAX_FAILURES;
+}
+
+function recordFailure(ip: string) {
+  const entry = failures.get(ip);
+
+  if (!entry || Date.now() - entry.first > WINDOW_MS) {
+    failures.set(ip, { count: 1, first: Date.now() });
+  } else {
+    entry.count++;
+  }
+
+  // Keep the map from growing without bound
+  if (failures.size > 5000) failures.clear();
+}
+
+/**
+ * Checks the password on the SERVER. On success the browser gets a signed
+ * session token — never the password itself.
  */
 export async function POST(request: Request) {
-  const { password } = await request.json();
+  const ip = clientIp(request);
 
-  if (password !== process.env.ADMIN_PASSWORD) {
+  if (isLockedOut(ip)) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Try again in a few minutes.' },
+      { status: 429 }
+    );
+  }
+
+  const body = await request.json().catch(() => ({}));
+
+  if (!checkPassword(body?.password)) {
+    recordFailure(ip);
     return NextResponse.json({ error: 'Wrong password' }, { status: 401 });
   }
 
+  failures.delete(ip);
+
   const cookieStore = await cookies();
 
-  cookieStore.set('lsm_admin', password, {
-    httpOnly: true,          // JavaScript can't read it — protects against XSS
+  cookieStore.set(SESSION_COOKIE, createSessionToken(), {
+    httpOnly: true, // JavaScript can't read it — protects against XSS
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // one week
+    sameSite: 'lax', // the proxy also rejects cross-site writes by Origin
+    maxAge: SESSION_MAX_AGE,
     path: '/',
   });
+
+  cookieStore.delete(LEGACY_COOKIE);
 
   return NextResponse.json({ success: true });
 }
@@ -29,6 +92,7 @@ export async function POST(request: Request) {
 /** Logging out just clears the cookie */
 export async function DELETE() {
   const cookieStore = await cookies();
-  cookieStore.delete('lsm_admin');
+  cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(LEGACY_COOKIE);
   return NextResponse.json({ success: true });
 }

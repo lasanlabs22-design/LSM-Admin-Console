@@ -1,25 +1,16 @@
-import { cookies } from 'next/headers';
-
-/**
- * Where the backend lives.
- *
- * API_URL has no NEXT_PUBLIC_ prefix, which means it's read at runtime
- * rather than baked in when the site is built — so changing it in Vercel
- * takes effect on the next request, with no redeploy. This file only ever
- * runs on the server, so the browser never needs to see it.
- */
-const API_URL =
-  process.env.API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://localhost:3000';
+import { API_URL, isSignedIn } from './backend';
+import { backendKey } from './session';
 
 /**
  * Calls the Lasan Mart backend with the admin key attached.
- * Runs on the server only — the password never reaches the browser.
+ * Runs on the server only — the key never reaches the browser.
  */
 export async function adminFetch(path: string, options: RequestInit = {}) {
-  const cookieStore = await cookies();
-  const key = cookieStore.get('lsm_admin')?.value || '';
+  // The proxy already guards pages; this keeps the key safe if it's ever
+  // bypassed or misconfigured
+  if (!(await isSignedIn())) throw new Error('Not signed in');
+
+  const key = backendKey();
 
   let res: Response;
 

@@ -6,14 +6,14 @@ import { useState } from 'react';
 const STATUSES = [
   { key: 'pending', label: 'Waiting', color: 'var(--warn)' },
   { key: 'approved', label: 'Approved', color: 'var(--good)' },
-  { key: 'paused', label: 'Paused', color: '#3A86FF' },
-  { key: 'rejected', label: 'Rejected', color: '#8A8F98' },
+  { key: 'paused', label: 'Paused', color: 'var(--info)' },
+  { key: 'rejected', label: 'Rejected', color: 'var(--neutral)' },
 ];
 
 const ROLES = [
-  { key: 'influencer', label: 'Creators', color: '#C13584' },
-  { key: 'vendor', label: 'Vendors', color: '#0EA97A' },
-  { key: 'freelancer', label: 'Freelancers', color: '#3A86FF' },
+  { key: 'influencer', label: 'Creators', color: 'var(--role-creator)' },
+  { key: 'vendor', label: 'Vendors', color: 'var(--role-vendor)' },
+  { key: 'freelancer', label: 'Freelancers', color: 'var(--info)' },
 ];
 
 export default function StatusFilter({
@@ -40,7 +40,7 @@ export default function StatusFilter({
     <div className="space-y-2.5">
       <div className="flex gap-2">
         <div
-          className="flex-1 flex items-center gap-2.5 rounded-xl px-3.5 h-11 border"
+          className="flex-1 min-w-0 flex items-center gap-2.5 rounded-xl px-3.5 h-11 border"
           style={{ background: 'var(--surface)', borderColor: 'var(--line)' }}
         >
           <svg
@@ -60,7 +60,9 @@ export default function StatusFilter({
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setParam('q', search.trim())}
             placeholder="Search name, phone or handle…"
-            className="flex-1 bg-transparent text-[14px] outline-none"
+            enterKeyHint="search"
+            aria-label="Search"
+            className="flex-1 min-w-0 bg-transparent text-[14px] outline-none"
             style={{ color: 'var(--text)' }}
           />
 

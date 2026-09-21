@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { adminFetch } from '@/lib/api';
 import AutoRefresh from '@/components/AutoRefresh';
+import { tint } from '@/lib/meta';
 
 const STATUS: Record<string, { label: string; colour: string; note: string }> =
   {
@@ -16,7 +17,7 @@ const STATUS: Record<string, { label: string; colour: string; note: string }> =
     },
     in_progress: {
       label: 'In progress',
-      colour: '#5F259F',
+      colour: 'var(--brand)',
       note: 'Work is underway',
     },
     completed: {
@@ -48,7 +49,7 @@ export default async function WorkPage({
 
   try {
     const data = await adminFetch(
-      `/admin/work${filter ? `?status=${filter}` : ''}`
+      `/admin/work${filter ? `?status=${encodeURIComponent(filter)}` : ''}`
     );
     work = data.work;
     stats = data.stats;
@@ -89,13 +90,13 @@ export default async function WorkPage({
           <Stat
             label="In progress"
             value={stats.in_progress}
-            accent="#5F259F"
+            accent="var(--brand)"
             href="/work?status=in_progress"
           />
           <Stat
             label="Completed"
             value={stats.completed}
-            accent="#8A8F98"
+            accent="var(--neutral)"
             href="/work?status=completed"
           />
         </div>
@@ -114,7 +115,7 @@ export default async function WorkPage({
       {error && (
         <div
           className="card p-4"
-          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+          style={{ borderColor: 'var(--bad-line)' }}
         >
           <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
@@ -143,7 +144,7 @@ export default async function WorkPage({
                 animationDelay: `${0.04 * Math.min(i, 8)}s`,
                 borderColor:
                   w.status === 'offered'
-                    ? 'rgba(232,174,0,0.3)'
+                    ? 'var(--warn-line)'
                     : 'var(--line)',
               }}
             >
@@ -202,7 +203,7 @@ export default async function WorkPage({
                     className="w-9 h-9 shrink-0 rounded-full flex items-center justify-center font-semibold text-white text-[12px]"
                     style={{
                       background:
-                        w.partner_role === 'vendor' ? '#0EA97A' : '#3A86FF',
+                        w.partner_role === 'vendor' ? 'var(--role-vendor)' : 'var(--info)',
                     }}
                   >
                     {w.partner_name.charAt(0).toUpperCase()}
@@ -261,7 +262,7 @@ function Stat({
     <Link
       href={href}
       className="card card-hover p-4 relative overflow-hidden block"
-      style={urgent ? { borderColor: `${accent}55` } : undefined}
+      style={urgent ? { borderColor: tint(accent, 33) } : undefined}
     >
       <span
         className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-[0.13]"

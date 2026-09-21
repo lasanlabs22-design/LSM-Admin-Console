@@ -4,6 +4,7 @@ import InfluencerCard from './InfluencerCard';
 import StatusFilter from './StatusFilter';
 import HubRequest, { HubRequestItem } from './HubRequest';
 import AutoRefresh from '@/components/AutoRefresh';
+import { tint } from '@/lib/meta';
 
 export type AdminInfluencer = {
   id: string;
@@ -105,12 +106,12 @@ export default async function InfluencersPage({
             urgent={stats.pending > 0}
           />
           <Stat label="Approved" value={stats.approved} accent="var(--good)" />
-          <Stat label="Creators" value={stats.influencers} accent="#C13584" />
-          <Stat label="Vendors" value={stats.vendors} accent="#0EA97A" />
+          <Stat label="Creators" value={stats.influencers} accent="var(--role-creator)" />
+          <Stat label="Vendors" value={stats.vendors} accent="var(--role-vendor)" />
           <Stat
             label="Freelancers"
             value={stats.freelancers}
-            accent="#3A86FF"
+            accent="var(--info)"
           />
         </div>
       )}
@@ -160,7 +161,7 @@ export default async function InfluencersPage({
       {error && (
         <div
           className="card p-4"
-          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+          style={{ borderColor: 'var(--bad-line)' }}
         >
           <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
@@ -200,7 +201,7 @@ function Stat({
   return (
     <div
       className="card p-4 relative overflow-hidden"
-      style={urgent ? { borderColor: `${accent}55` } : undefined}
+      style={urgent ? { borderColor: tint(accent, 33) } : undefined}
     >
       <span
         className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-[0.13]"

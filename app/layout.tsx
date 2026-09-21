@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -17,6 +17,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Lasan Mart Admin',
   description: 'Internal console',
+  // Internal tool — keep it out of search results
+  robots: { index: false, follow: false },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  // Lets the tab bar sit under the home indicator, padded by safe-area insets
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0b0a10' },
+    { media: '(prefers-color-scheme: light)', color: '#fafafb' },
+  ],
 };
 
 export default function RootLayout({

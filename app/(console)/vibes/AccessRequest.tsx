@@ -47,7 +47,7 @@ export default function AccessRequest({ person }: { person: any }) {
 
   return (
     <>
-      <div className="card p-4" style={{ borderColor: 'rgba(232,174,0,0.3)' }}>
+      <div className="card p-4" style={{ borderColor: 'var(--warn-line)' }}>
         <div className="flex items-start gap-3">
           {person.photo_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -58,7 +58,7 @@ export default function AccessRequest({ person }: { person: any }) {
               style={{ background: 'var(--surface-hover)' }}
             />
           ) : (
-            <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center font-semibold text-white text-[13px]">
+            <div className="w-10 h-10 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand-2)] flex items-center justify-center font-semibold text-white text-[13px]">
               {person.name.charAt(0).toUpperCase()}
             </div>
           )}

@@ -3,14 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import { tint } from '@/lib/meta';
 
 const STATUS: Record<string, { label: string; color: string }> = {
   offered: { label: 'Waiting on them', color: 'var(--warn)' },
   accepted: { label: 'Accepted', color: 'var(--good)' },
-  in_progress: { label: 'In progress', color: '#5F259F' },
+  in_progress: { label: 'In progress', color: 'var(--brand)' },
   completed: { label: 'Completed', color: 'var(--good)' },
   declined: { label: 'Declined', color: 'var(--bad)' },
-  withdrawn: { label: 'Withdrawn', color: '#8A8F98' },
+  withdrawn: { label: 'Withdrawn', color: 'var(--neutral)' },
 };
 
 export default function AssignPanel({
@@ -109,7 +110,7 @@ export default function AssignPanel({
       onClick={onClose}
     >
       <div
-        className="card w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
+        className="card w-full sm:max-w-2xl max-h-[92dvh] overflow-y-auto rounded-t-3xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -321,10 +322,10 @@ function PartnerRow({
 
   const roleColour =
     v.role === 'vendor'
-      ? '#0EA97A'
+      ? 'var(--role-vendor)'
       : v.role === 'freelancer'
-        ? '#3A86FF'
-        : '#C13584';
+        ? 'var(--info)'
+        : 'var(--role-creator)';
 
   return (
     <button
@@ -334,12 +335,12 @@ function PartnerRow({
         borderColor: isPicked
           ? 'var(--brand)'
           : highlight
-            ? `${roleColour}55`
+            ? tint(roleColour, 33)
             : 'var(--line)',
         background: isPicked
-          ? 'rgba(95,37,159,0.06)'
+          ? 'var(--brand-soft)'
           : highlight
-            ? `${roleColour}0A`
+            ? tint(roleColour, 4)
             : 'transparent',
       }}
     >
@@ -353,7 +354,7 @@ function PartnerRow({
             {v.role && (
               <span
                 className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded"
-                style={{ background: `${roleColour}1F`, color: roleColour }}
+                style={{ background: tint(roleColour, 12), color: roleColour }}
               >
                 {v.role}
               </span>
@@ -363,7 +364,7 @@ function PartnerRow({
               <span
                 className="text-[10px] font-semibold px-2 py-0.5 rounded"
                 style={{
-                  background: 'rgba(18,179,160,0.14)',
+                  background: 'var(--good-soft)',
                   color: 'var(--good)',
                 }}
               >
