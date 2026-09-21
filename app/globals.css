@@ -183,6 +183,11 @@ body::before {
 /* ---------------- Pieces ---------------- */
 
 .card {
+  /* Partners and customers type their own names, handles, emails and
+     links — often with no spaces. Let those break anywhere rather than
+     push the card past the edge of a phone screen. */
+  min-width: 0;
+  overflow-wrap: anywhere;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
