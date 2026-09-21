@@ -110,7 +110,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Charts */}
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <section className="card p-6 rise" style={{ animationDelay: '0.1s' }}>
           <div className="t-label mb-5">Status breakdown</div>
           {statusSlices.length > 0 ? (

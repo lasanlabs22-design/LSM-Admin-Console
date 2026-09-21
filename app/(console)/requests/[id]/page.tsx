@@ -206,7 +206,7 @@ export default async function RequestDetailPage({
       {/* Structured details */}
       {detailEntries.length > 0 && (
         <Card title="Details" delay="0.2s">
-          <div className="grid sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {detailEntries.map(([key, value]) => (
               <div
                 key={key}
