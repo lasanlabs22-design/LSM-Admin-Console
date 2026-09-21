@@ -37,7 +37,7 @@ export default function Filters({
       {/* Search */}
       <div className="flex gap-2">
         <div
-          className="flex-1 flex items-center gap-2.5 rounded-xl px-3.5 h-11 border"
+          className="flex-1 min-w-0 flex items-center gap-2.5 rounded-xl px-3.5 h-11 border"
           style={{ background: 'var(--surface)', borderColor: 'var(--line)' }}
         >
           <svg
@@ -57,7 +57,9 @@ export default function Filters({
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setParam('q', search.trim())}
             placeholder="Search name, phone, email…"
-            className="flex-1 bg-transparent text-[14px] outline-none"
+            enterKeyHint="search"
+            aria-label="Search"
+            className="flex-1 min-w-0 bg-transparent text-[14px] outline-none"
             style={{ color: 'var(--text)' }}
           />
 
@@ -78,7 +80,7 @@ export default function Filters({
 
         <button
           onClick={() => setParam('q', search.trim())}
-          className="px-4 rounded-xl text-[13px] font-semibold border transition"
+          className="shrink-0 px-4 rounded-xl text-[13px] font-semibold border transition"
           style={{
             background: 'var(--surface)',
             borderColor: 'var(--line)',

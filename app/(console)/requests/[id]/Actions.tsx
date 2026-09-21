@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AdminRequest } from '@/lib/api';
-import { STATUSES, STATUS_META } from '@/lib/meta';
+import type { AdminRequest } from '@/lib/api';
+import { STATUSES, STATUS_META, tint } from '@/lib/meta';
 import AssignPanel from '../AssignPanel';
 
 /** How an assignment is doing, in words the team can act on */
@@ -23,7 +23,7 @@ const WORK_STATUS: Record<
   },
   in_progress: {
     label: 'In progress',
-    colour: '#5F259F',
+    colour: 'var(--brand)',
     note: 'Work is underway',
   },
   completed: {
@@ -38,7 +38,7 @@ const WORK_STATUS: Record<
   },
   withdrawn: {
     label: 'Withdrawn',
-    colour: '#8A8F98',
+    colour: 'var(--neutral)',
     note: 'We pulled this back',
   },
 };
@@ -195,7 +195,7 @@ export default function Actions({
             style={{
               background: 'var(--surface-hover)',
               border: live
-                ? `1px solid ${w!.colour}44`
+                ? `1px solid ${tint(w!.colour, 27)}`
                 : '1px solid transparent',
             }}
           >
@@ -292,7 +292,7 @@ export default function Actions({
 
           <div
             className="rounded-xl p-4 mt-3"
-            style={{ background: `${verdict.colour}12` }}
+            style={{ background: tint(verdict.colour, 7) }}
           >
             <span
               className="text-[13.5px] font-semibold"
@@ -397,7 +397,7 @@ export default function Actions({
           disabled={busy || !dirty}
           className="text-white font-semibold text-[14px] px-5 py-2.5 rounded-xl transition disabled:opacity-25 disabled:cursor-not-allowed hover:opacity-90"
           style={{
-            background: 'linear-gradient(135deg, var(--brand), var(--brand))',
+            background: 'var(--brand-gradient)',
           }}
         >
           {busy ? 'Saving…' : 'Save changes'}

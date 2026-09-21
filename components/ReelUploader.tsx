@@ -249,7 +249,7 @@ export default function ReelUploader() {
                   style={{
                     width: `${progress}%`,
                     background:
-                      'linear-gradient(90deg,var(--brand),var(--brand))',
+                      'var(--brand-gradient)',
                   }}
                 />
               </div>
@@ -261,7 +261,7 @@ export default function ReelUploader() {
             disabled={busy}
             className="w-full text-white font-semibold text-[14px] py-3 rounded-xl transition disabled:opacity-40 hover:opacity-90"
             style={{
-              background: 'linear-gradient(135deg,var(--brand),var(--brand))',
+              background: 'var(--brand-gradient)',
             }}
           >
             {busy

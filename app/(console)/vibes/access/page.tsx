@@ -43,7 +43,7 @@ export default async function VibesAccessPage() {
       {error && (
         <div
           className="card p-4"
-          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+          style={{ borderColor: 'var(--bad-line)' }}
         >
           <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}

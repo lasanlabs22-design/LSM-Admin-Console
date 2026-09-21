@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { adminFetch, AdminRequest } from '@/lib/api';
-import { TYPE_META, formatDateTime, timeAgo } from '@/lib/meta';
+import { TYPE_META, formatDateTime, timeAgo, tint } from '@/lib/meta';
 import Actions from './Actions';
 
 export default async function RequestDetailPage({
@@ -16,7 +16,7 @@ export default async function RequestDetailPage({
 
   try {
     const [reqData, assigneeData] = await Promise.all([
-      adminFetch(`/admin/requests/${id}`),
+      adminFetch(`/admin/requests/${encodeURIComponent(id)}`),
       adminFetch('/admin/assignees').catch(() => ({ assignees: [] })),
     ]);
     request = reqData.request;
@@ -27,7 +27,7 @@ export default async function RequestDetailPage({
 
   if (error || !request) {
     return (
-      <div className="card p-6" style={{ borderColor: 'rgba(217,48,37,0.3)' }}>
+      <div className="card p-6" style={{ borderColor: 'var(--bad-line)' }}>
         <div className="t-title mb-1" style={{ color: 'var(--bad)' }}>
           Could not load this request
         </div>
@@ -46,7 +46,7 @@ export default async function RequestDetailPage({
   const r = request;
   const type = TYPE_META[r.type] || {
     label: r.type,
-    color: '#8A8F98',
+    color: 'var(--neutral)',
     emoji: '📄',
   };
 
@@ -71,9 +71,9 @@ export default async function RequestDetailPage({
 
       {/* Header */}
       <div
-        className="rounded-2xl p-6 relative overflow-hidden rise"
+        className="rounded-2xl p-5 sm:p-6 relative overflow-hidden rise"
         style={{
-          background: `linear-gradient(135deg, ${type.color}, ${type.color}D0)`,
+          background: `linear-gradient(135deg, ${type.color}, ${tint(type.color, 82)})`,
           animationDelay: '0.04s',
         }}
       >
@@ -89,8 +89,8 @@ export default async function RequestDetailPage({
           </div>
 
           <h1
-            className="mt-2.5 text-white leading-tight"
-            style={{ fontSize: 26, fontWeight: 650, letterSpacing: '-0.025em' }}
+            className="mt-2.5 text-white leading-tight break-words text-[22px] sm:text-[26px]"
+            style={{ fontWeight: 650, letterSpacing: '-0.025em' }}
           >
             {r.title || r.name}
           </h1>
@@ -182,7 +182,7 @@ export default async function RequestDetailPage({
             }}
           >
             <p
-              className="text-[15px] leading-relaxed whitespace-pre-wrap"
+              className="text-[15px] leading-relaxed whitespace-pre-wrap break-words"
               style={{ color: 'var(--text)' }}
             >
               {r.description}
@@ -204,7 +204,7 @@ export default async function RequestDetailPage({
                 <div className="t-label" style={{ fontSize: 9.5 }}>
                   {key.replace(/([A-Z])/g, ' $1')}
                 </div>
-                <div className="font-medium text-[14px] mt-1.5 leading-snug">
+                <div className="font-medium text-[14px] mt-1.5 leading-snug break-words">
                   {Array.isArray(value) ? value.join(', ') : String(value)}
                 </div>
               </div>
@@ -247,14 +247,16 @@ function Card({
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-3 sm:gap-4">
       <span
-        className="text-[12px] w-28 shrink-0 pt-0.5"
+        className="text-[12px] w-24 sm:w-28 shrink-0 pt-0.5"
         style={{ color: 'var(--text-faint)' }}
       >
         {label}
       </span>
-      <span className="text-[15px] font-medium">{value}</span>
+      <span className="text-[15px] font-medium min-w-0 break-words">
+        {value}
+      </span>
     </div>
   );
 }

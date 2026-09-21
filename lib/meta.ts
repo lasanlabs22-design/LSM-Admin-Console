@@ -2,18 +2,18 @@ export const STATUS_META: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  new: { label: 'New', color: '#3A86FF', bg: 'rgba(58,134,255,0.12)' },
+  new: { label: 'New', color: 'var(--info)', bg: 'var(--info-soft)' },
   contacted: {
     label: 'Contacted',
     color: 'var(--warn)',
-    bg: 'rgba(232,174,0,0.12)',
+    bg: 'var(--warn-soft)',
   },
   in_progress: {
     label: 'In Progress',
     color: 'var(--good)',
-    bg: 'rgba(18,179,160,0.12)',
+    bg: 'var(--good-soft)',
   },
-  closed: { label: 'Closed', color: '#8A8F98', bg: 'rgba(138,143,152,0.12)' },
+  closed: { label: 'Closed', color: 'var(--neutral)', bg: 'var(--neutral-soft)' },
 };
 
 export const TYPE_META: Record<
@@ -21,12 +21,63 @@ export const TYPE_META: Record<
   { label: string; color: string; emoji: string }
 > = {
   service: { label: 'Service', color: 'var(--brand)', emoji: '📣' },
-  custom: { label: 'Custom', color: '#7B2FF7', emoji: '🛠️' },
+  custom: { label: 'Custom', color: 'var(--accent)', emoji: '🛠️' },
   plan: { label: 'Plan', color: 'var(--good)', emoji: '💼' },
-  influencer: { label: 'Influencer', color: '#C13584', emoji: '⭐' },
+  influencer: { label: 'Influencer', color: 'var(--role-creator)', emoji: '⭐' },
 };
 
 export const STATUSES = ['new', 'contacted', 'in_progress', 'closed'];
+
+/**
+ * Partners type their own portfolio links at sign-up, so they can't be
+ * trusted as-is. Only plain web links get through; anything else
+ * (javascript:, data:, …) is dropped.
+ */
+export function safeExternalUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`;
+
+  try {
+    const url = new URL(withScheme);
+    return url.protocol === 'https:' || url.protocol === 'http:'
+      ? url.href
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A see-through version of any colour — hex or var(--token).
+ * Appending hex alpha ("#7c4dff33") silently breaks on CSS variables.
+ */
+export function tint(color: string, percent: number): string {
+  return `color-mix(in srgb, ${color} ${percent}%, transparent)`;
+}
+
+/** Handles arrive with or without the @, and must stay on instagram.com */
+export function instagramUrl(handle: string): string {
+  return `https://instagram.com/${encodeURIComponent(handle.replace(/^@/, ''))}`;
+}
+
+/**
+ * Which page numbers to show: the ends, and a couple either side of the
+ * current page. 40 pages as 40 buttons won't fit on a phone.
+ */
+export function pageWindow(current: number, total: number): (number | null)[] {
+  const pages: (number | null)[] = [];
+
+  for (let p = 1; p <= total; p++) {
+    if (p === 1 || p === total || Math.abs(p - current) <= 1) {
+      pages.push(p);
+    } else if (pages[pages.length - 1] !== null) {
+      pages.push(null); // a gap, drawn as "…"
+    }
+  }
+
+  return pages;
+}
 
 /** "3 hours ago", "2 days ago" — easier to scan than a timestamp */
 export function timeAgo(iso: string): string {

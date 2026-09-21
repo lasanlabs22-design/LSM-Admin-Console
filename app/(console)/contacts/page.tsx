@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { adminFetch, AdminContact } from '@/lib/api';
-import { timeAgo } from '@/lib/meta';
+import { pageWindow, timeAgo } from '@/lib/meta';
 import DeleteContact from './DeleteContact';
 
 export default async function ContactsPage({
@@ -40,7 +40,7 @@ export default async function ContactsPage({
       {error && (
         <div
           className="card p-4"
-          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+          style={{ borderColor: 'var(--bad-line)' }}
         >
           <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}
@@ -65,13 +65,13 @@ export default async function ContactsPage({
                   style={{ background: 'var(--surface-hover)' }}
                 />
               ) : (
-                <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center font-semibold text-white text-[15px]">
+                <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand-2)] flex items-center justify-center font-semibold text-white text-[15px]">
                   {c.name.charAt(0).toUpperCase()}
                 </div>
               )}
 
               <div className="flex-1 min-w-0">
-                <div className="t-title">{c.name}</div>
+                <div className="t-title break-words">{c.name}</div>
 
                 {c.company_name && (
                   <div
@@ -114,7 +114,7 @@ export default async function ContactsPage({
             </div>
 
             <div
-              className="flex items-center justify-between mt-3 pt-3 text-[12px] border-t"
+              className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-3 pt-3 text-[12px] border-t"
               style={{ borderColor: 'var(--line)', color: 'var(--text-faint)' }}
             >
               <span>Joined {timeAgo(c.created_at)}</span>
@@ -124,7 +124,7 @@ export default async function ContactsPage({
 
                 {c.last_request_at && (
                   <Link
-                    href={`/requests?q=${c.phone}`}
+                    href={`/requests?q=${encodeURIComponent(c.phone)}`}
                     className="font-semibold"
                     style={{ color: 'var(--brand)' }}
                   >
@@ -138,8 +138,19 @@ export default async function ContactsPage({
       </div>
 
       {data && data.pages > 1 && (
-        <div className="flex items-center justify-center gap-1.5 pt-3">
-          {Array.from({ length: data.pages }, (_, i) => i + 1).map((p) => {
+        <nav
+          aria-label="Pages"
+          className="flex flex-wrap items-center justify-center gap-1.5 pt-3"
+        >
+          {pageWindow(data.page, data.pages).map((p, i) => {
+            if (p === null) {
+              return (
+                <span key={`gap-${i}`} className="t-meta px-1">
+                  …
+                </span>
+              );
+            }
+
             const q = new URLSearchParams(query);
             q.set('page', String(p));
             const isCurrent = p === data.page;
@@ -148,6 +159,7 @@ export default async function ContactsPage({
               <Link
                 key={p}
                 href={`/contacts?${q.toString()}`}
+                aria-current={isCurrent ? 'page' : undefined}
                 className="w-9 h-9 rounded-lg flex items-center justify-center t-num text-[13px] font-semibold transition"
                 style={
                   isCurrent
@@ -163,7 +175,7 @@ export default async function ContactsPage({
               </Link>
             );
           })}
-        </div>
+        </nav>
       )}
     </div>
   );

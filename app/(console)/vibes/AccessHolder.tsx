@@ -35,7 +35,7 @@ export default function AccessHolder({ person }: { person: any }) {
           className="w-9 h-9 rounded-full object-cover shrink-0"
         />
       ) : (
-        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center font-semibold text-white text-[12px]">
+        <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand-2)] flex items-center justify-center font-semibold text-white text-[12px]">
           {person.name.charAt(0).toUpperCase()}
         </div>
       )}

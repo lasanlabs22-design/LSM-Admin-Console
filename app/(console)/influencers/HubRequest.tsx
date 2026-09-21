@@ -12,9 +12,9 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 const ROLE_COLOR: Record<string, string> = {
-  influencer: '#C13584',
-  vendor: '#0EA97A',
-  freelancer: '#3A86FF',
+  influencer: 'var(--role-creator)',
+  vendor: 'var(--role-vendor)',
+  freelancer: 'var(--info)',
 };
 
 function timeAgo(iso: string): string {
@@ -53,7 +53,7 @@ export default function HubRequest({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const accent = ROLE_COLOR[r.role || 'influencer'] || '#C13584';
+  const accent = ROLE_COLOR[r.role || 'influencer'] || 'var(--role-creator)';
 
   const patch = async (status: string) => {
     setBusy(true);
@@ -83,7 +83,7 @@ export default function HubRequest({
   return (
     <div
       className="card p-4"
-      style={{ borderColor: done ? 'var(--line)' : 'rgba(232,174,0,0.3)' }}
+      style={{ borderColor: done ? 'var(--line)' : 'var(--warn-line)' }}
     >
       <div className="flex items-start gap-3">
         {r.photo_url ? (

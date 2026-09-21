@@ -43,7 +43,7 @@ export default async function VibesPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rise flex items-start justify-between gap-4">
+      <header className="rise flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="t-display">Lasan Vibes</h1>
           <p className="t-body mt-1.5">
@@ -69,8 +69,8 @@ export default async function VibesPage() {
           style={{ animationDelay: '0.05s' }}
         >
           <Stat label="Live" value={stats.live} accent="var(--good)" />
-          <Stat label="Hidden" value={stats.hidden} accent="#8A8F98" />
-          <Stat label="From users" value={stats.from_users} accent="#7B2FF7" />
+          <Stat label="Hidden" value={stats.hidden} accent="var(--neutral)" />
+          <Stat label="From users" value={stats.from_users} accent="var(--accent)" />
           <Stat
             label="Total views"
             value={stats.total_views}
@@ -87,7 +87,7 @@ export default async function VibesPage() {
       {error && (
         <div
           className="card p-4"
-          style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+          style={{ borderColor: 'var(--bad-line)' }}
         >
           <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
             {error}

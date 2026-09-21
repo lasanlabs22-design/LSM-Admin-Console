@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import PoweredBy from '@/components/PoweredBy';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -60,7 +61,11 @@ export default function LoginPage() {
           router.refresh();
         }, 550);
       } else {
-        setError('That password is not right');
+        setError(
+          res.status === 429
+            ? 'Too many attempts — wait a few minutes and try again'
+            : 'That password is not right'
+        );
         setShake(true);
         setTimeout(() => setShake(false), 450);
         setBusy(false);
@@ -72,7 +77,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090F] flex items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-dvh bg-[#08090F] flex items-center justify-center px-5 pt-10 pb-24 relative overflow-hidden">
       {/* ---------- Background ---------- */}
 
       {/* Drifting colour */}
@@ -82,7 +87,7 @@ export default function LoginPage() {
           top: '-14%',
           left: '-10%',
           background:
-            'radial-gradient(circle, rgba(255,107,53,0.30), transparent 68%)',
+            'radial-gradient(circle, rgba(124,77,255,0.30), transparent 68%)',
           filter: 'blur(70px)',
         }}
       />
@@ -134,7 +139,7 @@ export default function LoginPage() {
               bottom: '-10px',
               width: e.size,
               height: e.size,
-              background: '#FFB347',
+              background: '#b794ff',
               animationDuration: `${e.duration}s`,
               animationDelay: `${e.delay}s`,
               '--drift': e.drift,
@@ -154,12 +159,12 @@ export default function LoginPage() {
             {/* Two pulses, offset so there's always one expanding */}
             <span
               className="absolute inset-0 rounded-2xl anim-ring"
-              style={{ background: 'rgba(255,107,53,0.35)' }}
+              style={{ background: 'rgba(124,77,255,0.35)' }}
             />
             <span
               className="absolute inset-0 rounded-2xl anim-ring"
               style={{
-                background: 'rgba(255,107,53,0.25)',
+                background: 'rgba(124,77,255,0.25)',
                 animationDelay: '1.4s',
               }}
             />
@@ -167,8 +172,8 @@ export default function LoginPage() {
             <div
               className="relative w-[62px] h-[62px] rounded-2xl flex items-center justify-center overflow-hidden"
               style={{
-                background: 'linear-gradient(135deg, #FF9A4D, var(--brand))',
-                boxShadow: '0 12px 40px rgba(255,107,53,0.42)',
+                background: 'var(--brand-gradient)',
+                boxShadow: '0 12px 40px rgba(124,77,255,0.42)',
               }}
             >
               {/* Light sweeping across the badge */}
@@ -222,10 +227,10 @@ export default function LoginPage() {
             style={{
               background: 'rgba(255,255,255,0.045)',
               borderColor: focused
-                ? 'rgba(255,107,53,0.45)'
+                ? 'rgba(124,77,255,0.45)'
                 : 'rgba(255,255,255,0.10)',
               boxShadow: focused
-                ? '0 0 0 1px rgba(255,107,53,0.15), 0 20px 60px rgba(0,0,0,0.5)'
+                ? '0 0 0 1px rgba(124,77,255,0.15), 0 20px 60px rgba(0,0,0,0.5)'
                 : '0 20px 60px rgba(0,0,0,0.4)',
             }}
           >
@@ -241,7 +246,7 @@ export default function LoginPage() {
               style={{
                 background: 'rgba(255,255,255,0.05)',
                 borderColor: focused
-                  ? 'rgba(255,107,53,0.6)'
+                  ? 'rgba(124,77,255,0.6)'
                   : 'rgba(255,255,255,0.12)',
               }}
             >
@@ -258,6 +263,8 @@ export default function LoginPage() {
 
               <input
                 type="password"
+                autoComplete="current-password"
+                aria-label="Admin password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
@@ -283,7 +290,7 @@ export default function LoginPage() {
               className="overflow-hidden transition-all duration-300"
               style={{ maxHeight: error ? 40 : 0, opacity: error ? 1 : 0 }}
             >
-              <p className="text-[12.5px] pt-3" style={{ color: '#FF6B6B' }}>
+              <p className="text-[12.5px] pt-3" style={{ color: 'var(--bad)' }}>
                 {error}
               </p>
             </div>
@@ -295,11 +302,11 @@ export default function LoginPage() {
               style={{
                 background: done
                   ? 'var(--good)'
-                  : 'linear-gradient(135deg, #FF9A4D, var(--brand))',
+                  : 'var(--brand-gradient)',
                 boxShadow:
                   busy || !password.trim()
                     ? 'none'
-                    : '0 8px 28px rgba(255,107,53,0.35)',
+                    : '0 8px 28px rgba(124,77,255,0.35)',
               }}
             >
               {/* Sweep, only when it's usable */}
@@ -345,11 +352,25 @@ export default function LoginPage() {
         </div>
 
         <p
-          className="text-white/22 text-[11.5px] text-center mt-7 anim-in"
+          className="text-white/30 text-[11.5px] text-center mt-7 anim-in"
           style={{ animationDelay: '0.36s' }}
         >
-          Internal use only · Lasan Labs
+          Internal use only
         </p>
+      </div>
+
+      {/* This screen is always dark, whatever theme was saved */}
+      <div
+        className="absolute bottom-0 inset-x-0 pb-[calc(1.5rem+env(safe-area-inset-bottom))] anim-in"
+        style={
+          {
+            animationDelay: '0.42s',
+            '--text-faint': 'rgba(255,255,255,0.32)',
+            '--text-muted': 'rgba(255,255,255,0.62)',
+          } as React.CSSProperties
+        }
+      >
+        <PoweredBy />
       </div>
     </div>
   );

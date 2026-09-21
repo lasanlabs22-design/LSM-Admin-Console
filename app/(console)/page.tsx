@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { adminFetch, Stats } from '@/lib/api';
-import { STATUS_META, TYPE_META } from '@/lib/meta';
+import { STATUS_META, TYPE_META, tint } from '@/lib/meta';
 import DonutChart from '@/components/DonutChart';
 import AutoRefresh from '@/components/AutoRefresh';
 
@@ -18,11 +18,11 @@ export default async function DashboardPage() {
     return (
       <div
         className="card p-6 rise"
-        style={{ borderColor: 'rgba(217,48,37,0.3)' }}
+        style={{ borderColor: 'var(--bad-line)' }}
       >
         <AutoRefresh />
 
-        <div className="t-title mb-1" style={{ color: '#F87171' }}>
+        <div className="t-title mb-1" style={{ color: 'var(--bad)' }}>
           Could not load the dashboard
         </div>
         <p className="t-body">{error}</p>
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
   const typeSlices = stats.byType.map((t) => ({
     label: TYPE_META[t.type]?.label || t.type,
     value: t.count,
-    color: TYPE_META[t.type]?.color || '#8A8F98',
+    color: TYPE_META[t.type]?.color || 'var(--neutral)',
   }));
 
   return (
@@ -178,7 +178,7 @@ export default async function DashboardPage() {
                     }}
                   />
 
-                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand)] flex items-center justify-center text-[13px] font-semibold text-white shrink-0">
+                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-[var(--brand)] to-[var(--brand-2)] flex items-center justify-center text-[13px] font-semibold text-white shrink-0">
                     {w.assigned_to.charAt(0).toUpperCase()}
                   </div>
 
@@ -226,7 +226,7 @@ function Stat({
     <Link
       href={href}
       className="card card-hover card-lift relative p-4 overflow-hidden group"
-      style={urgent ? { borderColor: `${accent}44` } : undefined}
+      style={urgent ? { borderColor: tint(accent, 27) } : undefined}
     >
       {/* Soft corner wash in the stat's colour */}
       <span

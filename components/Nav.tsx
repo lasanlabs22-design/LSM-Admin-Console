@@ -116,7 +116,7 @@ export default function Nav() {
               className="w-8 h-8 rounded-[10px] flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
               style={{
                 background:
-                  'linear-gradient(135deg, var(--brand-hover), var(--brand))',
+                  'var(--brand-gradient)',
                 boxShadow: '0 4px 14px -4px var(--brand)',
               }}
             >
@@ -196,6 +196,7 @@ export default function Nav() {
         style={{
           borderColor: 'var(--line)',
           background: 'color-mix(in srgb, var(--bg) 88%, transparent)',
+          paddingTop: 'env(safe-area-inset-top)',
         }}
       >
         <div className="px-4 h-14 flex items-center justify-between">
@@ -204,7 +205,7 @@ export default function Nav() {
               className="w-7 h-7 rounded-lg flex items-center justify-center"
               style={{
                 background:
-                  'linear-gradient(135deg, var(--brand-hover), var(--brand))',
+                  'var(--brand-gradient)',
               }}
             >
               <Logo size={14} />
@@ -232,7 +233,7 @@ export default function Nav() {
 
       {/* ---------- Mobile bottom bar ---------- */}
       <nav
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl border-t flex"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl border-t flex px-1 safe-bottom"
         style={{
           borderColor: 'var(--line)',
           background: 'color-mix(in srgb, var(--bg) 92%, transparent)',
@@ -244,17 +245,17 @@ export default function Nav() {
             <Link
               key={l.href}
               href={l.href}
-              className="relative flex-1 flex flex-col items-center gap-1 py-2.5 transition"
+              aria-current={active ? 'page' : undefined}
+              className="relative flex-1 min-w-0 flex flex-col items-center gap-1 pt-2 pb-2.5 transition"
               style={{ color: active ? 'var(--brand)' : 'var(--text-faint)' }}
             >
-              {active && (
-                <span
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-b"
-                  style={{ background: 'var(--brand)' }}
-                />
-              )}
-              <Icon>{l.icon}</Icon>
-              <span className="text-[9.5px] font-semibold leading-none">
+              <span
+                className="flex items-center justify-center w-11 h-7 rounded-full transition-colors"
+                style={{ background: active ? 'var(--brand-soft)' : 'transparent' }}
+              >
+                <Icon>{l.icon}</Icon>
+              </span>
+              <span className="text-[10px] font-semibold leading-none truncate max-w-full">
                 {l.label}
               </span>
             </Link>
