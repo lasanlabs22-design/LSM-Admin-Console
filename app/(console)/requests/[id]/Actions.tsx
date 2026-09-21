@@ -3,45 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { AdminRequest } from '@/lib/api';
-import { STATUSES, STATUS_META, tint } from '@/lib/meta';
+import { STATUSES, STATUS_META, WORK_STATUS, tint } from '@/lib/meta';
 import AssignPanel from '../AssignPanel';
-
-/** How an assignment is doing, in words the team can act on */
-const WORK_STATUS: Record<
-  string,
-  { label: string; colour: string; note: string }
-> = {
-  offered: {
-    label: 'Waiting on them',
-    colour: 'var(--warn)',
-    note: "Sent — they haven't answered yet",
-  },
-  accepted: {
-    label: 'Accepted',
-    colour: 'var(--good)',
-    note: "They've taken it on but haven't started",
-  },
-  in_progress: {
-    label: 'In progress',
-    colour: 'var(--brand)',
-    note: 'Work is underway',
-  },
-  completed: {
-    label: 'Completed',
-    colour: 'var(--good)',
-    note: 'They say the work is done',
-  },
-  declined: {
-    label: 'Declined',
-    colour: 'var(--bad)',
-    note: 'They passed — pick someone else',
-  },
-  withdrawn: {
-    label: 'Withdrawn',
-    colour: 'var(--neutral)',
-    note: 'We pulled this back',
-  },
-};
 
 const VERDICT: Record<string, { label: string; colour: string }> = {
   good: { label: 'Went well', colour: 'var(--good)' },
@@ -69,9 +32,9 @@ export default function Actions({
   const [withdrawing, setWithdrawing] = useState(false);
 
   /* Whoever currently has the work, if anyone */
-  const work: any = (request as any).assignment;
+  const work = request.assignment ?? null;
   const live =
-    work && ['offered', 'accepted', 'in_progress'].includes(work.status);
+    !!work && ['offered', 'accepted', 'in_progress'].includes(work.status);
 
   const dirty =
     assignedTo !== (request.assigned_to || '') ||
@@ -301,12 +264,12 @@ export default function Actions({
               {verdict.label}
             </span>
 
-            {work.comment && (
+            {work?.comment && (
               <p
                 className="text-[13.5px] mt-2 leading-relaxed"
                 style={{ color: 'var(--text-muted)' }}
               >
-                &quot;{work.comment}&quot;
+                &quot;{work?.comment}&quot;
               </p>
             )}
 

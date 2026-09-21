@@ -13,7 +13,11 @@ export const STATUS_META: Record<
     color: 'var(--good)',
     bg: 'var(--good-soft)',
   },
-  closed: { label: 'Closed', color: 'var(--neutral)', bg: 'var(--neutral-soft)' },
+  closed: {
+    label: 'Closed',
+    color: 'var(--neutral)',
+    bg: 'var(--neutral-soft)',
+  },
 };
 
 export const TYPE_META: Record<
@@ -23,7 +27,11 @@ export const TYPE_META: Record<
   service: { label: 'Service', color: 'var(--brand)', emoji: '📣' },
   custom: { label: 'Custom', color: 'var(--accent)', emoji: '🛠️' },
   plan: { label: 'Plan', color: 'var(--good)', emoji: '💼' },
-  influencer: { label: 'Influencer', color: 'var(--role-creator)', emoji: '⭐' },
+  influencer: {
+    label: 'Influencer',
+    color: 'var(--role-creator)',
+    emoji: '⭐',
+  },
 };
 
 export const STATUSES = ['new', 'contacted', 'in_progress', 'closed'];
@@ -79,25 +87,112 @@ export function pageWindow(current: number, total: number): (number | null)[] {
   return pages;
 }
 
-/** "3 hours ago", "2 days ago" — easier to scan than a timestamp */
-export function timeAgo(iso: string): string {
+/**
+ * "3h ago", "2d ago" — easier to scan than a timestamp.
+ * `short` drops the " ago" for tight spots like reel cards.
+ */
+export function timeAgo(iso: string, { short = false } = {}): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
+  const ago = short ? '' : ' ago';
 
   if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return `${mins}m${ago}`;
 
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours}h${ago}`;
 
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return `${days}d${ago}`;
 
   return new Date(iso).toLocaleDateString('en-IN', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
   });
+}
+
+/** A readable message from anything a catch block can receive */
+export function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : 'Something went wrong';
+}
+
+/** How a job sent to a partner is doing, in words the team can act on */
+export const WORK_STATUS: Record<
+  string,
+  { label: string; colour: string; note: string }
+> = {
+  offered: {
+    label: 'Waiting on them',
+    colour: 'var(--warn)',
+    note: "Sent — they haven't answered yet",
+  },
+  accepted: {
+    label: 'Accepted',
+    colour: 'var(--good)',
+    note: "They've taken it on but haven't started",
+  },
+  in_progress: {
+    label: 'In progress',
+    colour: 'var(--brand)',
+    note: 'Work is underway',
+  },
+  completed: {
+    label: 'Completed',
+    colour: 'var(--good)',
+    note: 'They say the work is done',
+  },
+  declined: {
+    label: 'Declined',
+    colour: 'var(--bad)',
+    note: 'They passed — pick someone else',
+  },
+  withdrawn: {
+    label: 'Withdrawn',
+    colour: 'var(--neutral)',
+    note: 'We pulled this back',
+  },
+};
+
+/** Where a Lasan Hub application stands. `long` is for the detail view. */
+export const PARTNER_STATUS: Record<
+  string,
+  { label: string; long: string; color: string; bg: string }
+> = {
+  pending: {
+    label: 'Waiting',
+    long: 'Waiting for review',
+    color: 'var(--warn)',
+    bg: 'var(--warn-soft)',
+  },
+  approved: {
+    label: 'Approved',
+    long: 'Approved',
+    color: 'var(--good)',
+    bg: 'var(--good-soft)',
+  },
+  paused: {
+    label: 'Paused',
+    long: 'Paused',
+    color: 'var(--info)',
+    bg: 'var(--info-soft)',
+  },
+  rejected: {
+    label: 'Rejected',
+    long: 'Rejected',
+    color: 'var(--neutral)',
+    bg: 'var(--neutral-soft)',
+  },
+};
+
+export const ROLE_META: Record<string, { label: string; color: string }> = {
+  influencer: { label: 'Creator', color: 'var(--role-creator)' },
+  vendor: { label: 'Vendor', color: 'var(--role-vendor)' },
+  freelancer: { label: 'Freelancer', color: 'var(--role-freelancer)' },
+};
+
+export function roleMeta(role: string | null | undefined) {
+  return ROLE_META[role || 'influencer'] || ROLE_META.influencer;
 }
 
 export function formatDateTime(iso: string): string {

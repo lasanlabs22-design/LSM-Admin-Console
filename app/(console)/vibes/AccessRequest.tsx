@@ -2,17 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createPortal } from 'react-dom';
+import Dialog from '@/components/Dialog';
+import { timeAgo } from '@/lib/meta';
+import type { AccessPerson } from '@/lib/types';
 
-function timeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
-
-export default function AccessRequest({ person }: { person: any }) {
+export default function AccessRequest({ person }: { person: AccessPerson }) {
   const router = useRouter();
 
   const [busy, setBusy] = useState(false);
@@ -137,61 +131,58 @@ export default function AccessRequest({ person }: { person: any }) {
       </div>
 
       {/* Asking twice, because this lets someone post to every user */}
-      {confirming &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-5"
-            style={{
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            <div className="card w-full max-w-md p-6">
-              <h3 className="t-title">
-                {confirming === 'grant'
-                  ? `Let ${person.name} post?`
-                  : `Refuse ${person.name}?`}
-              </h3>
+      {confirming && (
+        <Dialog
+          label={
+            confirming === 'grant'
+              ? `Give ${person.name} posting access`
+              : `Refuse ${person.name}`
+          }
+          onClose={() => !busy && setConfirming(null)}
+        >
+          <h3 className="t-title">
+            {confirming === 'grant'
+              ? `Let ${person.name} post?`
+              : `Refuse ${person.name}?`}
+          </h3>
 
-              <p className="t-body mt-2.5">
-                {confirming === 'grant'
-                  ? 'Their videos will appear in the feed for everyone using Lasan Mart, straight away and without further checks. You can take this back later.'
-                  : "They'll be told we're not opening posting for now. They can message the team about it."}
-              </p>
+          <p className="t-body mt-2.5">
+            {confirming === 'grant'
+              ? 'Their videos will appear in the feed for everyone using Lasan Mart, straight away and without further checks. You can take this back later.'
+              : "They'll be told we're not opening posting for now. They can message the team about it."}
+          </p>
 
-              <div className="flex gap-2 mt-6">
-                <button
-                  onClick={() => decide(confirming === 'grant')}
-                  disabled={busy}
-                  className="flex-1 py-3 rounded-xl font-semibold text-[14px] text-white transition disabled:opacity-30"
-                  style={{
-                    background:
-                      confirming === 'grant' ? 'var(--good)' : 'var(--bad)',
-                  }}
-                >
-                  {busy
-                    ? 'Saving…'
-                    : confirming === 'grant'
-                      ? 'Yes, give access'
-                      : 'Yes, refuse'}
-                </button>
+          <div className="flex gap-2 mt-6">
+            <button
+              onClick={() => decide(confirming === 'grant')}
+              disabled={busy}
+              className="flex-1 py-3 rounded-xl font-semibold text-[14px] text-white transition disabled:opacity-30"
+              style={{
+                background:
+                  confirming === 'grant' ? 'var(--good)' : 'var(--bad)',
+              }}
+            >
+              {busy
+                ? 'Saving…'
+                : confirming === 'grant'
+                  ? 'Yes, give access'
+                  : 'Yes, refuse'}
+            </button>
 
-                <button
-                  onClick={() => setConfirming(null)}
-                  disabled={busy}
-                  className="px-5 py-3 rounded-xl font-semibold text-[14px] border"
-                  style={{
-                    borderColor: 'var(--line)',
-                    color: 'var(--text-faint)',
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+            <button
+              onClick={() => setConfirming(null)}
+              disabled={busy}
+              className="px-5 py-3 rounded-xl font-semibold text-[14px] border"
+              style={{
+                borderColor: 'var(--line)',
+                color: 'var(--text-faint)',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </Dialog>
+      )}
     </>
   );
 }

@@ -2,51 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createPortal } from 'react-dom';
 import type { AdminInfluencer } from './page';
 import PartnerDetail from './PartnerDetail';
-import { instagramUrl, safeExternalUrl, tint } from '@/lib/meta';
-
-const STATUS_META: Record<
-  string,
-  { label: string; color: string; bg: string }
-> = {
-  pending: {
-    label: 'Waiting',
-    color: 'var(--warn)',
-    bg: 'var(--warn-soft)',
-  },
-  approved: {
-    label: 'Approved',
-    color: 'var(--good)',
-    bg: 'var(--good-soft)',
-  },
-  paused: { label: 'Paused', color: 'var(--info)', bg: 'var(--info-soft)' },
-  rejected: {
-    label: 'Rejected',
-    color: 'var(--neutral)',
-    bg: 'var(--neutral-soft)',
-  },
-};
-
-const ROLE_META: Record<string, { label: string; color: string }> = {
-  influencer: { label: 'Creator', color: 'var(--role-creator)' },
-  vendor: { label: 'Vendor', color: 'var(--role-vendor)' },
-  freelancer: { label: 'Freelancer', color: 'var(--info)' },
-};
-
-function timeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-  });
-}
+import Dialog from '@/components/Dialog';
+import {
+  PARTNER_STATUS,
+  instagramUrl,
+  roleMeta,
+  safeExternalUrl,
+  timeAgo,
+  tint,
+} from '@/lib/meta';
 
 export default function InfluencerCard({
   influencer: p,
@@ -63,12 +29,12 @@ export default function InfluencerCard({
   const [error, setError] = useState('');
   const [showDetail, setShowDetail] = useState(false);
 
-  const status = STATUS_META[p.status] || STATUS_META.pending;
-  const role = ROLE_META[p.role] || ROLE_META.influencer;
+  const status = PARTNER_STATUS[p.status] || PARTNER_STATUS.pending;
+  const role = roleMeta(p.role);
   const isPending = p.status === 'pending';
   const portfolio = safeExternalUrl(p.portfolio_url);
 
-  const patch = async (body: Record<string, any>) => {
+  const patch = async (body: Record<string, unknown>) => {
     setBusy(true);
     setError('');
 
@@ -331,7 +297,7 @@ export default function InfluencerCard({
               disabled={busy}
               className="px-4 py-2.5 rounded-xl text-[13px] font-semibold border transition disabled:opacity-40"
               style={{
-                borderColor: 'rgba(217,48,37,0.35)',
+                borderColor: 'var(--bad-line)',
                 color: 'var(--bad)',
               }}
             >
@@ -346,67 +312,60 @@ export default function InfluencerCard({
       )}
 
       {/* Reject dialog — needs a reason, so they can fix it and reapply */}
-      {rejecting &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-5"
+      {rejecting && (
+        <Dialog
+          label={`Reject ${p.name}`}
+          onClose={() => !busy && setRejecting(false)}
+        >
+          <h3 className="t-title">Reject {p.name}?</h3>
+          <p className="t-body mt-2">
+            Add a short reason. They can fix it and reapply.
+          </p>
+
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={3}
+            autoFocus
+            placeholder={
+              p.role === 'vendor'
+                ? "e.g. GST number doesn't match the company name"
+                : "e.g. Instagram handle doesn't match the name given"
+            }
+            className="w-full rounded-xl px-4 py-3 mt-4 text-[14px] border outline-none resize-none"
             style={{
-              background: 'rgba(0,0,0,0.6)',
-              backdropFilter: 'blur(4px)',
+              background: 'var(--surface-hover)',
+              borderColor: 'var(--line)',
+              color: 'var(--text)',
             }}
-          >
-            <div className="card w-full max-w-md p-6">
-              <h3 className="t-title">Reject {p.name}?</h3>
-              <p className="t-body mt-2">
-                Add a short reason. They can fix it and reapply.
-              </p>
+          />
 
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={3}
-                autoFocus
-                placeholder={
-                  p.role === 'vendor'
-                    ? "e.g. GST number doesn't match the company name"
-                    : "e.g. Instagram handle doesn't match the name given"
-                }
-                className="w-full rounded-xl px-4 py-3 mt-4 text-[14px] border outline-none resize-none"
-                style={{
-                  background: 'var(--surface-hover)',
-                  borderColor: 'var(--line)',
-                  color: 'var(--text)',
-                }}
-              />
+          <div className="flex gap-2 mt-5">
+            <button
+              onClick={() =>
+                patch({ status: 'rejected', reviewNote: note.trim() })
+              }
+              disabled={busy || note.trim().length < 3}
+              className="flex-1 py-3 rounded-xl font-semibold text-[14px] text-white transition disabled:opacity-30"
+              style={{ background: 'var(--bad)' }}
+            >
+              {busy ? 'Saving…' : 'Reject'}
+            </button>
 
-              <div className="flex gap-2 mt-5">
-                <button
-                  onClick={() =>
-                    patch({ status: 'rejected', reviewNote: note.trim() })
-                  }
-                  disabled={busy || note.trim().length < 3}
-                  className="flex-1 py-3 rounded-xl font-semibold text-[14px] text-white transition disabled:opacity-30"
-                  style={{ background: 'var(--bad)' }}
-                >
-                  {busy ? 'Saving…' : 'Reject'}
-                </button>
-
-                <button
-                  onClick={() => setRejecting(false)}
-                  disabled={busy}
-                  className="px-5 py-3 rounded-xl font-semibold text-[14px] border"
-                  style={{
-                    borderColor: 'var(--line)',
-                    color: 'var(--text-faint)',
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+            <button
+              onClick={() => setRejecting(false)}
+              disabled={busy}
+              className="px-5 py-3 rounded-xl font-semibold text-[14px] border"
+              style={{
+                borderColor: 'var(--line)',
+                color: 'var(--text-faint)',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </Dialog>
+      )}
     </>
   );
 }

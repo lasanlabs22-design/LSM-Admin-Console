@@ -10,14 +10,28 @@ import { useRouter } from 'next/navigation';
  *   - coming back to the tab, which is when someone is about to look
  *   - a slow poll, for a screen left open and watched
  *
- * Both skip when the tab is hidden, so a forgotten window costs nothing.
+ * Both skip when the tab is hidden, so a forgotten window costs nothing,
+ * and while someone is typing or has a pop-up open, so nothing shifts
+ * under them mid-task.
  */
+function isBusy() {
+  const el = document.activeElement as HTMLElement | null;
+  const typing =
+    !!el &&
+    (el.tagName === 'INPUT' ||
+      el.tagName === 'TEXTAREA' ||
+      el.tagName === 'SELECT' ||
+      el.isContentEditable);
+
+  return typing || !!document.querySelector('[aria-modal="true"]');
+}
+
 export default function AutoRefresh({ seconds = 60 }: { seconds?: number }) {
   const router = useRouter();
 
   useEffect(() => {
     const refreshIfVisible = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && !isBusy()) {
         router.refresh();
       }
     };

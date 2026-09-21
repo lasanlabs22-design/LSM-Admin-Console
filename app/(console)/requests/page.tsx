@@ -1,8 +1,23 @@
 import Link from 'next/link';
 import { adminFetch, AdminRequest } from '@/lib/api';
-import { STATUS_META, TYPE_META, pageWindow, timeAgo, tint } from '@/lib/meta';
+import {
+  STATUS_META,
+  TYPE_META,
+  errorMessage,
+  timeAgo,
+  tint,
+} from '@/lib/meta';
+import LoadError from '@/components/LoadError';
+import Pagination from '@/components/Pagination';
 import Filters from './Filters';
 import AutoRefresh from '@/components/AutoRefresh';
+
+type RequestList = {
+  requests: AdminRequest[];
+  total: number;
+  page: number;
+  pages: number;
+};
 
 /** Groups requests under Today / Yesterday / This week / Earlier */
 function groupByDay(requests: AdminRequest[]) {
@@ -53,18 +68,13 @@ export default async function RequestsPage({
   if (params.q) query.set('q', params.q);
   if (params.page) query.set('page', params.page);
 
-  let data: {
-    requests: AdminRequest[];
-    total: number;
-    page: number;
-    pages: number;
-  } | null = null;
+  let data: RequestList | null = null;
   let error: string | null = null;
 
   try {
-    data = await adminFetch(`/admin/requests?${query.toString()}`);
-  } catch (err: any) {
-    error = err.message;
+    data = await adminFetch<RequestList>(`/admin/requests?${query.toString()}`);
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   const groups = data ? groupByDay(data.requests) : [];
@@ -84,16 +94,7 @@ export default async function RequestsPage({
         <Filters current={params} />
       </div>
 
-      {error && (
-        <div
-          className="card p-4"
-          style={{ borderColor: 'var(--bad-line)' }}
-        >
-          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
-            {error}
-          </p>
-        </div>
-      )}
+      {error && <LoadError message={error} />}
 
       {data && data.requests.length === 0 && (
         <div className="card p-12 text-center">
@@ -140,45 +141,13 @@ export default async function RequestsPage({
       </div>
 
       {/* Paging */}
-      {data && data.pages > 1 && (
-        <nav
-          aria-label="Pages"
-          className="flex flex-wrap items-center justify-center gap-1.5 pt-3"
-        >
-          {pageWindow(data.page, data.pages).map((p, i) => {
-            if (p === null) {
-              return (
-                <span key={`gap-${i}`} className="t-meta px-1">
-                  …
-                </span>
-              );
-            }
-
-            const q = new URLSearchParams(query);
-            q.set('page', String(p));
-            const isCurrent = p === data.page;
-
-            return (
-              <Link
-                key={p}
-                href={`/requests?${q.toString()}`}
-                aria-current={isCurrent ? 'page' : undefined}
-                className="w-9 h-9 rounded-lg flex items-center justify-center t-num text-[13px] font-semibold transition"
-                style={
-                  isCurrent
-                    ? { background: 'var(--brand)', color: '#fff' }
-                    : {
-                        background: 'var(--surface)',
-                        border: '1px solid var(--line)',
-                        color: 'var(--text-faint)',
-                      }
-                }
-              >
-                {p}
-              </Link>
-            );
-          })}
-        </nav>
+      {data && (
+        <Pagination
+          path="/requests"
+          query={query}
+          page={data.page}
+          pages={data.pages}
+        />
       )}
     </div>
   );
@@ -193,7 +162,7 @@ function RequestCard({ request: r }: { request: AdminRequest }) {
   };
 
   /** Who outside the team is doing this, if anyone */
-  const partner = (r as any).assignment;
+  const partner = r.assignment;
 
   // Closed requests recede; new ones stand out
   const isClosed = r.status === 'closed';

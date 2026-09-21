@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { roleMeta, timeAgo } from '@/lib/meta';
 
 const TYPE_LABEL: Record<string, string> = {
   payment: 'Payment',
@@ -10,20 +11,6 @@ const TYPE_LABEL: Record<string, string> = {
   complaint: 'Complaint',
   general: 'General',
 };
-
-const ROLE_COLOR: Record<string, string> = {
-  influencer: 'var(--role-creator)',
-  vendor: 'var(--role-vendor)',
-  freelancer: 'var(--info)',
-};
-
-function timeAgo(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 export type HubRequestItem = {
   id: string;
@@ -53,7 +40,7 @@ export default function HubRequest({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const accent = ROLE_COLOR[r.role || 'influencer'] || 'var(--role-creator)';
+  const accent = roleMeta(r.role).color;
 
   const patch = async (status: string) => {
     setBusy(true);

@@ -1,7 +1,16 @@
 import Link from 'next/link';
 import { adminFetch, AdminContact } from '@/lib/api';
-import { pageWindow, timeAgo } from '@/lib/meta';
+import { errorMessage, timeAgo } from '@/lib/meta';
+import LoadError from '@/components/LoadError';
+import Pagination from '@/components/Pagination';
 import DeleteContact from './DeleteContact';
+
+type ContactList = {
+  contacts: AdminContact[];
+  total: number;
+  page: number;
+  pages: number;
+};
 
 export default async function ContactsPage({
   searchParams,
@@ -14,18 +23,13 @@ export default async function ContactsPage({
   if (params.q) query.set('q', params.q);
   if (params.page) query.set('page', params.page);
 
-  let data: {
-    contacts: AdminContact[];
-    total: number;
-    page: number;
-    pages: number;
-  } | null = null;
+  let data: ContactList | null = null;
   let error: string | null = null;
 
   try {
-    data = await adminFetch(`/admin/contacts?${query.toString()}`);
-  } catch (err: any) {
-    error = err.message;
+    data = await adminFetch<ContactList>(`/admin/contacts?${query.toString()}`);
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   return (
@@ -37,16 +41,7 @@ export default async function ContactsPage({
         </p>
       </header>
 
-      {error && (
-        <div
-          className="card p-4"
-          style={{ borderColor: 'var(--bad-line)' }}
-        >
-          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
-            {error}
-          </p>
-        </div>
-      )}
+      {error && <LoadError message={error} />}
 
       <div className="space-y-2.5">
         {data?.contacts.map((c, i) => (
@@ -137,45 +132,13 @@ export default async function ContactsPage({
         ))}
       </div>
 
-      {data && data.pages > 1 && (
-        <nav
-          aria-label="Pages"
-          className="flex flex-wrap items-center justify-center gap-1.5 pt-3"
-        >
-          {pageWindow(data.page, data.pages).map((p, i) => {
-            if (p === null) {
-              return (
-                <span key={`gap-${i}`} className="t-meta px-1">
-                  …
-                </span>
-              );
-            }
-
-            const q = new URLSearchParams(query);
-            q.set('page', String(p));
-            const isCurrent = p === data.page;
-
-            return (
-              <Link
-                key={p}
-                href={`/contacts?${q.toString()}`}
-                aria-current={isCurrent ? 'page' : undefined}
-                className="w-9 h-9 rounded-lg flex items-center justify-center t-num text-[13px] font-semibold transition"
-                style={
-                  isCurrent
-                    ? { background: 'var(--brand)', color: '#fff' }
-                    : {
-                        background: 'var(--surface)',
-                        border: '1px solid var(--line)',
-                        color: 'var(--text-faint)',
-                      }
-                }
-              >
-                {p}
-              </Link>
-            );
-          })}
-        </nav>
+      {data && (
+        <Pagination
+          path="/contacts"
+          query={query}
+          page={data.page}
+          pages={data.pages}
+        />
       )}
     </div>
   );

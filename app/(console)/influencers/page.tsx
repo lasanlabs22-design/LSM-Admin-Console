@@ -4,7 +4,9 @@ import InfluencerCard from './InfluencerCard';
 import StatusFilter from './StatusFilter';
 import HubRequest, { HubRequestItem } from './HubRequest';
 import AutoRefresh from '@/components/AutoRefresh';
-import { tint } from '@/lib/meta';
+import { errorMessage } from '@/lib/meta';
+import LoadError from '@/components/LoadError';
+import StatCard from '@/components/StatCard';
 
 export type AdminInfluencer = {
   id: string;
@@ -33,6 +35,16 @@ export type AdminInfluencer = {
   open_requests: number;
 };
 
+type HubStats = {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  influencers: number;
+  vendors: number;
+  freelancers: number;
+};
+
 export default async function InfluencersPage({
   searchParams,
 }: {
@@ -50,29 +62,24 @@ export default async function InfluencersPage({
 
   let influencers: AdminInfluencer[] = [];
   let requests: HubRequestItem[] = [];
-  let stats: {
-    total: number;
-    pending: number;
-    approved: number;
-    rejected: number;
-    influencers: number;
-    vendors: number;
-    freelancers: number;
-  } | null = null;
+  let stats: HubStats | null = null;
   let error: string | null = null;
 
   try {
-    const data = await adminFetch(`/admin/influencers?${query.toString()}`);
-    influencers = data.influencers;
+    const data = await adminFetch<{
+      influencers: AdminInfluencer[];
+      stats: HubStats;
+    }>(`/admin/influencers?${query.toString()}`);
+    influencers = data.influencers || [];
     stats = data.stats;
-  } catch (err: any) {
-    error = err.message;
+  } catch (err) {
+    error = errorMessage(err);
   }
 
   /* Messages are a separate concern — a failure here shouldn't
      take out the whole page */
   try {
-    const reqData = await adminFetch(
+    const reqData = await adminFetch<{ requests: HubRequestItem[] }>(
       `/admin/influencer-requests?status=${showDone ? 'closed' : 'new'}`
     );
     requests = reqData.requests || [];
@@ -99,19 +106,31 @@ export default async function InfluencersPage({
           className="grid grid-cols-2 lg:grid-cols-5 gap-3 rise"
           style={{ animationDelay: '0.05s' }}
         >
-          <Stat
+          <StatCard
             label="Waiting"
             value={stats.pending}
             accent="var(--warn)"
             urgent={stats.pending > 0}
           />
-          <Stat label="Approved" value={stats.approved} accent="var(--good)" />
-          <Stat label="Creators" value={stats.influencers} accent="var(--role-creator)" />
-          <Stat label="Vendors" value={stats.vendors} accent="var(--role-vendor)" />
-          <Stat
+          <StatCard
+            label="Approved"
+            value={stats.approved}
+            accent="var(--good)"
+          />
+          <StatCard
+            label="Creators"
+            value={stats.influencers}
+            accent="var(--role-creator)"
+          />
+          <StatCard
+            label="Vendors"
+            value={stats.vendors}
+            accent="var(--role-vendor)"
+          />
+          <StatCard
             label="Freelancers"
             value={stats.freelancers}
-            accent="var(--info)"
+            accent="var(--role-freelancer)"
           />
         </div>
       )}
@@ -158,16 +177,7 @@ export default async function InfluencersPage({
         <StatusFilter current={params} />
       </div>
 
-      {error && (
-        <div
-          className="card p-4"
-          style={{ borderColor: 'var(--bad-line)' }}
-        >
-          <p className="text-[13px]" style={{ color: 'var(--bad)' }}>
-            {error}
-          </p>
-        </div>
-      )}
+      {error && <LoadError message={error} />}
 
       {!error && influencers.length === 0 && (
         <div className="card p-12 text-center">
@@ -182,47 +192,6 @@ export default async function InfluencersPage({
         {influencers.map((inf, i) => (
           <InfluencerCard key={inf.id} influencer={inf} index={i} />
         ))}
-      </div>
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-  urgent,
-}: {
-  label: string;
-  value: number;
-  accent: string;
-  urgent?: boolean;
-}) {
-  return (
-    <div
-      className="card p-4 relative overflow-hidden"
-      style={urgent ? { borderColor: tint(accent, 33) } : undefined}
-    >
-      <span
-        className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-[0.13]"
-        style={{ background: accent }}
-      />
-      <div className="relative">
-        <div className="flex items-center gap-1.5">
-          {urgent && (
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: accent }}
-            />
-          )}
-          <span className="t-label">{label}</span>
-        </div>
-        <div
-          className="t-num mt-2.5 leading-none"
-          style={{ fontSize: 30, fontWeight: 600, color: accent }}
-        >
-          {value}
-        </div>
       </div>
     </div>
   );

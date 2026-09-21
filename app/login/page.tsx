@@ -1,8 +1,31 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PoweredBy from '@/components/PoweredBy';
+
+/**
+ * Where the rising embers sit. Math.random() would differ between the
+ * server and the browser and break hydration, so this uses a small seeded
+ * generator instead: scattered-looking, but the same on both sides.
+ */
+function seeded(seed: number) {
+  return () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+}
+
+const EMBERS = (() => {
+  const rand = seeded(20260921);
+  return Array.from({ length: 12 }, () => ({
+    left: rand() * 100,
+    size: 2 + rand() * 3,
+    duration: 11 + rand() * 9,
+    delay: rand() * 10,
+    drift: `${(rand() - 0.5) * 90}px`,
+  }));
+})();
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,32 +36,6 @@ export default function LoginPage() {
   const [done, setDone] = useState(false);
   const [focused, setFocused] = useState(false);
   const [shake, setShake] = useState(false);
-
-  // Fixed positions, worked out once so they don't jump on re-render
-  const [embers, setEmbers] = useState<
-    {
-      left: number;
-      size: number;
-      duration: number;
-      delay: number;
-      drift: string;
-    }[]
-  >([]);
-
-  // Random values differ between server and browser, which breaks hydration.
-  // Generating them after mount means the server renders no embers,
-  // then they appear a frame later — invisible to the user.
-  useEffect(() => {
-    setEmbers(
-      Array.from({ length: 12 }, () => ({
-        left: Math.random() * 100,
-        size: 2 + Math.random() * 3,
-        duration: 11 + Math.random() * 9,
-        delay: Math.random() * 10,
-        drift: `${(Math.random() - 0.5) * 90}px`,
-      }))
-    );
-  }, []);
 
   const handleSubmit = async () => {
     if (!password.trim() || busy) return;
@@ -129,7 +126,7 @@ export default function LoginPage() {
       </div>
 
       {/* Rising embers */}
-      {embers.map((e, i) => (
+      {EMBERS.map((e, i) => (
         <span
           key={i}
           className="absolute rounded-full anim-float pointer-events-none"
@@ -300,9 +297,7 @@ export default function LoginPage() {
               disabled={busy || !password.trim()}
               className="relative w-full mt-5 h-[50px] rounded-xl font-semibold text-[15px] text-white overflow-hidden transition-all duration-200 disabled:opacity-25 disabled:cursor-not-allowed"
               style={{
-                background: done
-                  ? 'var(--good)'
-                  : 'var(--brand-gradient)',
+                background: done ? 'var(--good)' : 'var(--brand-gradient)',
                 boxShadow:
                   busy || !password.trim()
                     ? 'none'
