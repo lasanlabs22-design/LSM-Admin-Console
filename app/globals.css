@@ -3,6 +3,10 @@
 /* ---------------- Theme tokens ---------------- */
 
 .dark {
+  /* Tells the browser to draw its own parts — dropdown lists, scrollbars,
+     date pickers — dark too, instead of white */
+  color-scheme: dark;
+
   --bg: #0b0a10;
   --bg-elevated: #12111a;
 
@@ -27,6 +31,8 @@
 }
 
 .light {
+  color-scheme: light;
+
   --bg: #fafafb;
   --bg-elevated: #ffffff;
 
@@ -362,6 +368,14 @@ body::before {
 .field:focus {
   border-color: var(--brand-line);
   background: var(--surface);
+}
+
+/* The open list of a dropdown. Some browsers ignore color-scheme here,
+   so the colours are set outright too — otherwise the options can show
+   light text on a white list. */
+select option {
+  background-color: var(--bg-elevated);
+  color: var(--text);
 }
 
 .field::placeholder {
