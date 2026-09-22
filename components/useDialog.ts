@@ -40,6 +40,11 @@ export function useDialog<T extends HTMLElement = HTMLDivElement>(
     document.body.style.overflow = 'hidden';
 
     const onKey = (e: KeyboardEvent) => {
+      // With one pop-up open over another (Reject inside the partner
+      // detail), only the top one — the last one added — responds
+      const open = document.querySelectorAll('[aria-modal="true"]');
+      if (panel && open.length > 0 && open[open.length - 1] !== panel) return;
+
       if (e.key === 'Escape') {
         e.stopPropagation();
         closeRef.current();

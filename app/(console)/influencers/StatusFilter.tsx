@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { SORTS, type SortKey } from './sort';
 
 const STATUSES = [
   { key: 'pending', label: 'Waiting', color: 'var(--warn)' },
@@ -13,13 +14,17 @@ const STATUSES = [
 const ROLES = [
   { key: 'influencer', label: 'Creators', color: 'var(--role-creator)' },
   { key: 'vendor', label: 'Vendors', color: 'var(--role-vendor)' },
-  { key: 'freelancer', label: 'Freelancers', color: 'var(--info)' },
+  { key: 'freelancer', label: 'Freelancers', color: 'var(--role-freelancer)' },
 ];
 
 export default function StatusFilter({
   current,
+  sort,
+  view,
 }: {
   current: Record<string, string | undefined>;
+  sort: SortKey;
+  view: 'cards' | 'list';
 }) {
   const router = useRouter();
   const [search, setSearch] = useState(current.q || '');
@@ -27,8 +32,9 @@ export default function StatusFilter({
   const setParam = (key: string, value?: string) => {
     const params = new URLSearchParams();
 
+    // Keep the other choices, but start again from page 1
     Object.entries(current).forEach(([k, v]) => {
-      if (v && k !== key) params.set(k, v);
+      if (v && k !== key && k !== 'page') params.set(k, v);
     });
 
     if (value) params.set(key, value);
@@ -79,6 +85,56 @@ export default function StatusFilter({
               </svg>
             </button>
           )}
+        </div>
+      </div>
+
+      {/* How to order and show the list */}
+      <div className="flex items-center gap-2">
+        <label
+          className="flex-1 min-w-0 flex items-center gap-2 rounded-xl px-3.5 h-10 border"
+          style={{ background: 'var(--surface)', borderColor: 'var(--line)' }}
+        >
+          <span className="t-label shrink-0">Sort</span>
+          <select
+            value={sort}
+            onChange={(e) =>
+              setParam(
+                'sort',
+                e.target.value === 'review' ? undefined : e.target.value
+              )
+            }
+            className="flex-1 min-w-0 bg-transparent text-[13px] font-semibold outline-none cursor-pointer"
+            style={{ color: 'var(--text)' }}
+          >
+            {Object.entries(SORTS).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div
+          role="group"
+          aria-label="Layout"
+          className="shrink-0 flex rounded-xl border p-0.5 h-10"
+          style={{ background: 'var(--surface)', borderColor: 'var(--line)' }}
+        >
+          {(['cards', 'list'] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setParam('view', v === 'cards' ? undefined : v)}
+              aria-pressed={view === v}
+              className="px-3 rounded-[10px] text-[12.5px] font-semibold transition-colors"
+              style={
+                view === v
+                  ? { background: 'var(--brand-soft)', color: 'var(--brand)' }
+                  : { color: 'var(--text-faint)' }
+              }
+            >
+              {v === 'cards' ? 'Cards' : 'List'}
+            </button>
+          ))}
         </div>
       </div>
 
