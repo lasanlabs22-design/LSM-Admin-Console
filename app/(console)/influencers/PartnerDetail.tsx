@@ -2,6 +2,7 @@
 
 import type { AdminInfluencer } from './page';
 import Dialog from '@/components/Dialog';
+import PartnerActions from './PartnerActions';
 import {
   PARTNER_STATUS,
   instagramUrl,
@@ -281,6 +282,14 @@ export default function PartnerDetail({
             </div>
           )}
         </Section>
+      </div>
+
+      {/* Pinned, so a decision doesn't mean scrolling past the whole profile */}
+      <div
+        className="sticky bottom-0 px-6 pb-5 pt-1 border-t"
+        style={{ background: 'var(--bg-elevated)', borderColor: 'var(--line)' }}
+      >
+        <PartnerActions partner={p} />
       </div>
     </Dialog>
   );
