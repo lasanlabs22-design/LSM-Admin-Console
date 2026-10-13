@@ -21,6 +21,8 @@ export type AdminReel = {
   created_at: string;
   contact_name: string | null;
   contact_phone: string | null;
+  /** Viewers who flagged it in the app. Older backends leave it out. */
+  report_count?: number;
 };
 
 type ReelStats = {
@@ -45,6 +47,10 @@ export default async function VibesPage() {
   } catch (err) {
     error = errorMessage(err);
   }
+
+  const reported = reels
+    .filter((r) => (r.report_count ?? 0) > 0)
+    .sort((a, b) => (b.report_count ?? 0) - (a.report_count ?? 0));
 
   return (
     <div className="space-y-6">
@@ -98,6 +104,35 @@ export default async function VibesPage() {
       </div>
 
       {error && <LoadError message={error} />}
+
+      {/* Reported by viewers — the team looks at these first. A user's
+          reel hides itself after 3 reports; show it again if it's fine. */}
+      {reported.length > 0 && (
+        <section className="rise" style={{ animationDelay: '0.12s' }}>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="t-label" style={{ color: 'var(--bad)' }}>
+              Needs review
+            </span>
+            <span
+              className="t-num text-[11px]"
+              style={{ color: 'var(--text-faint)' }}
+            >
+              {reported.length}
+            </span>
+            <span className="flex-1 h-px" style={{ background: 'var(--line)' }} />
+          </div>
+          <p className="t-meta mb-3">
+            Reported in the app. User reels hide automatically after 3
+            reports — show one again if it&apos;s fine, or delete it.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {reported.map((reel) => (
+              <ReelCard key={reel.id} reel={reel} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* The reels */}
       <section className="rise" style={{ animationDelay: '0.15s' }}>
