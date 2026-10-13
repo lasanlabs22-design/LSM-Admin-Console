@@ -15,6 +15,7 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const isLive = reel.status === 'live';
+  const reports = reel.report_count ?? 0;
 
   const patch = async (body: Record<string, unknown>) => {
     setBusy(true);
@@ -23,6 +24,19 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+      });
+      if (res.ok) router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** Reviewed and fine: clear the reports and put it back in the feed */
+  const dismissReports = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/reels/${reel.id}/reports/dismiss`, {
+        method: 'POST',
       });
       if (res.ok) router.refresh();
     } finally {
@@ -82,12 +96,23 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
           {reel.source === 'user' ? 'User' : 'Team'}
         </span>
 
-        {/* Hidden marker */}
-        {!isLive && (
-          <span className="absolute top-2 right-2 text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-black/70 text-white">
-            Hidden
-          </span>
-        )}
+        {/* Hidden marker, and how often viewers reported it */}
+        <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+          {!isLive && (
+            <span className="text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded bg-black/70 text-white">
+              Hidden
+            </span>
+          )}
+          {reports > 0 && (
+            <span
+              className="text-[9px] font-semibold px-1.5 py-0.5 rounded text-white"
+              style={{ background: 'var(--bad)' }}
+              title="Times viewers reported this reel in the app"
+            >
+              ⚑ {reports} report{reports === 1 ? '' : 's'}
+            </span>
+          )}
+        </div>
 
         {/* Views */}
         <span className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] text-white bg-black/55 px-1.5 py-0.5 rounded">
@@ -197,6 +222,19 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
                 </IconButton>
               </div>
             </div>
+
+            {/* Reviewed and fine — back to the feed, out of the review list */}
+            {reports > 0 && (
+              <button
+                onClick={dismissReports}
+                disabled={busy}
+                title="Clears its reports and shows it in the app again. Only new reports bring it back for review."
+                className="w-full mt-2 text-[11px] font-semibold py-1.5 rounded-lg text-white transition disabled:opacity-50"
+                style={{ background: 'var(--good)' }}
+              >
+                {busy ? 'Clearing…' : '✓ Looks fine — show in app'}
+              </button>
+            )}
           </>
         )}
       </div>
