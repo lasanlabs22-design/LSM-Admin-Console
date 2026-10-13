@@ -11,8 +11,14 @@ type CloudinaryUpload = {
   duration?: number;
 };
 
-const CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-const PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+/** What the backend hands back to sign one upload */
+type UploadSignature = {
+  cloudName: string;
+  apiKey: string;
+  folder: string;
+  timestamp: string;
+  signature: string;
+};
 
 const MAX_MB = 100;
 
@@ -65,10 +71,27 @@ export default function ReelUploader() {
     setProgress(0);
 
     try {
-      /* ---- 1. Straight to Cloudinary ---- */
+      /* ---- 1. A signature from our backend ----
+         Cloudinary refuses unsigned uploads, so the backend signs
+         this one without the secret ever reaching the browser */
+      const sigRes = await fetch('/api/uploads/signature', { method: 'POST' });
+      const sig = (await sigRes.json().catch(() => ({}))) as
+        | UploadSignature
+        | { error?: string };
+
+      if (!sigRes.ok || !('signature' in sig)) {
+        throw new Error(
+          ('error' in sig && sig.error) || 'Could not start the upload'
+        );
+      }
+
+      /* ---- 2. Straight to Cloudinary ---- */
       const form = new FormData();
       form.append('file', file);
-      form.append('upload_preset', PRESET as string);
+      form.append('api_key', sig.apiKey);
+      form.append('timestamp', sig.timestamp);
+      form.append('folder', sig.folder);
+      form.append('signature', sig.signature);
 
       const cloudinary = await new Promise<CloudinaryUpload>(
         (resolve, reject) => {
@@ -99,13 +122,13 @@ export default function ReelUploader() {
 
           xhr.open(
             'POST',
-            `https://api.cloudinary.com/v1_1/${CLOUD}/video/upload`
+            `https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`
           );
           xhr.send(form);
         }
       );
 
-      /* ---- 2. Tell our backend about it ---- */
+      /* ---- 3. Tell our backend about it ---- */
       // Cloudinary can generate a thumbnail by swapping the extension
       const thumbnailUrl = cloudinary.secure_url.replace(/\.\w+$/, '.jpg');
 

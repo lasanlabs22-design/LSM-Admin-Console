@@ -32,13 +32,15 @@ Set these in `.env.local` for local development, and in
 | `ADMIN_PASSWORD` | Yes | The password the team signs in with. It is also sent to the backend as its admin key. Changing it signs everyone out. If it's missing, nobody can sign in. |
 | `API_URL` | Yes in production | The backend's address, e.g. `https://api.example.com`. Read when each request is made, so changing it takes effect without a rebuild. In production the console reports an error if it's missing; locally it falls back to `http://localhost:3000`. |
 | `NEXT_PUBLIC_API_URL` | No | Older name for `API_URL`, still accepted. |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | For reel uploads | Cloudinary account that stores Vibes videos. |
-| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | For reel uploads | Cloudinary upload preset used by the reel uploader. |
 | `SESSION_SECRET` | No | Extra secret mixed into the sign-in session signature. Changing it signs everyone out. |
 | `ADMIN_API_KEY` | No | Send a different key to the backend instead of `ADMIN_PASSWORD`. |
 
 `NEXT_PUBLIC_` values are built into the page and visible in the browser.
 Never put a secret in one.
+
+Reel uploads need no Cloudinary settings here. The backend signs each
+upload (`/admin/uploads/signature`), because the Cloudinary preset only
+accepts signed uploads.
 
 ## Scripts
 
