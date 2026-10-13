@@ -31,6 +31,19 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
     }
   };
 
+  /** Reviewed and fine: clear the reports and put it back in the feed */
+  const dismissReports = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/reels/${reel.id}/reports/dismiss`, {
+        method: 'POST',
+      });
+      if (res.ok) router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const remove = async () => {
     setBusy(true);
     try {
@@ -209,6 +222,19 @@ export default function ReelCard({ reel }: { reel: AdminReel }) {
                 </IconButton>
               </div>
             </div>
+
+            {/* Reviewed and fine — back to the feed, out of the review list */}
+            {reports > 0 && (
+              <button
+                onClick={dismissReports}
+                disabled={busy}
+                title="Clears its reports and shows it in the app again. Only new reports bring it back for review."
+                className="w-full mt-2 text-[11px] font-semibold py-1.5 rounded-lg text-white transition disabled:opacity-50"
+                style={{ background: 'var(--good)' }}
+              >
+                {busy ? 'Clearing…' : '✓ Looks fine — show in app'}
+              </button>
+            )}
           </>
         )}
       </div>

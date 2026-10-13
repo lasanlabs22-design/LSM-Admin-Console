@@ -123,7 +123,8 @@ export default async function VibesPage() {
           </div>
           <p className="t-meta mb-3">
             Reported in the app. User reels hide automatically after 3
-            reports — show one again if it&apos;s fine, or delete it.
+            reports. If one is fine, tap <b>Looks fine</b> — it goes back in
+            the app and leaves this list. Otherwise delete it.
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
