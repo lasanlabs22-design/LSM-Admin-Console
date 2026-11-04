@@ -34,6 +34,8 @@ export type AdminRequest = {
   type: string;
   title: string | null;
   description: string | null;
+  /** The question the description answers, when the app asked one */
+  description_label?: string | null;
   details: Record<string, unknown> | null;
   status: string;
   assigned_to: string | null;
