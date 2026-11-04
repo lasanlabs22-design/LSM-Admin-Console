@@ -34,6 +34,27 @@ export const TYPE_META: Record<
   },
 };
 
+/**
+ * The app sends freelancer requests and tool enquiries as 'custom', the
+ * same as a genuine custom requirement. Their details say which they
+ * are, so the list and detail view can label them properly. The type
+ * filter still files them under Custom.
+ */
+export function requestTypeMeta(r: {
+  type: string;
+  details?: Record<string, unknown> | null;
+}) {
+  if (r.type === 'custom' && r.details?.source === 'Freelancers') {
+    return { label: 'Freelancer', color: 'var(--role-freelancer)', emoji: '🎬' };
+  }
+  if (r.type === 'custom' && r.details?.tool) {
+    return { label: 'Tool', color: 'var(--warn)', emoji: '🧰' };
+  }
+  return (
+    TYPE_META[r.type] || { label: r.type, color: 'var(--neutral)', emoji: '📄' }
+  );
+}
+
 export const STATUSES = ['new', 'contacted', 'in_progress', 'closed'];
 
 /**

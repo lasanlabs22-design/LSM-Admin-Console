@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { adminFetch, AdminRequest } from '@/lib/api';
 import {
-  TYPE_META,
+  requestTypeMeta,
   errorMessage,
   formatDateTime,
   timeAgo,
@@ -56,11 +56,7 @@ export default async function RequestDetailPage({
   }
 
   const r = request;
-  const type = TYPE_META[r.type] || {
-    label: r.type,
-    color: 'var(--neutral)',
-    emoji: '📄',
-  };
+  const type = requestTypeMeta(r);
 
   const detailEntries = r.details
     ? Object.entries(r.details).filter(
@@ -185,7 +181,8 @@ export default async function RequestDetailPage({
 
       {/* What they asked for */}
       {r.description && (
-        <Card title="What they need" delay="0.16s">
+        // The question they answered, when the app asked a specific one
+        <Card title={r.description_label || 'What they need'} delay="0.16s">
           <div
             className="rounded-xl p-4 border-l-[3px]"
             style={{

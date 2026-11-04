@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { adminFetch, AdminRequest } from '@/lib/api';
 import {
   STATUS_META,
-  TYPE_META,
+  requestTypeMeta,
   errorMessage,
   timeAgo,
   tint,
@@ -155,11 +155,7 @@ export default async function RequestsPage({
 
 function RequestCard({ request: r }: { request: AdminRequest }) {
   const status = STATUS_META[r.status] || STATUS_META.new;
-  const type = TYPE_META[r.type] || {
-    label: r.type,
-    color: 'var(--neutral)',
-    emoji: '📄',
-  };
+  const type = requestTypeMeta(r);
 
   /** Who outside the team is doing this, if anyone */
   const partner = r.assignment;
