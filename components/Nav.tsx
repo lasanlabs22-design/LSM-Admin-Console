@@ -36,6 +36,13 @@ const LINKS = [
     ),
   },
   {
+    href: '/hoardings',
+    label: 'Hoardings',
+    icon: (
+      <path d="M3 4h18a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8v5h-2v-5H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm1 2v7h16V6H4Z" />
+    ),
+  },
+  {
     href: '/influencers',
     label: 'Lasan Hub',
     icon: (
@@ -57,6 +64,7 @@ const PRIMARY = LINKS.filter((l) => PRIMARY_HREFS.includes(l.href));
 
 const HINTS: Record<string, string> = {
   '/vibes': 'Reels, uploads and posting access',
+  '/hoardings': 'Listings shown in the app, by city',
   '/contacts': 'Everyone registered on Lasan Mart',
 };
 const SECONDARY = LINKS.filter((l) => !PRIMARY_HREFS.includes(l.href)).map(
